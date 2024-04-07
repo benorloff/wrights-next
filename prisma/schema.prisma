@@ -5,91 +5,84 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  previewFeatures = ["multiSchema"]
+  provider        = "prisma-client-js"
 }
 
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
-  schemas = ["public", "auth"]
 }
 
 model Inventory {
-  id                  Int       @id
-  whse                String    @db.VarChar(6)
-  partNo              String    @map("part_no") @db.VarChar(34)
-  description         String?   @db.VarChar(80)
-  productCode         String?   @map("product_code") @db.VarChar(10)
-  hold                Int?
-  currentCost         Decimal?  @map("current_cost") @db.Decimal(15, 5)
-  averageCost         Decimal?  @map("average_cost") @db.Decimal(15, 5)
-  uomPurchase         String?   @map("uom_purchase") @db.VarChar(10)
-  uomInventory        String?   @map("uom_inventory") @db.VarChar(10)
-  uomSales            String?   @map("uom_sales") @db.VarChar(10)
-  currentPo           String?   @map("current_po") @db.VarChar(10)
-  minBuyQty           Decimal?  @map("min_buy_qty") @db.Decimal(11, 0)
-  poDueDate           DateTime? @map("po_due_date") @db.Date
-  discountable        Boolean?
-  serialized          Boolean   @default(false)
-  salesAcct           Int?      @map("sales_acct")
-  onhandQty           Decimal?  @map("onhand_qty") @db.Decimal(15, 5)
-  reorderQty          Decimal?  @map("reorder_qty") @db.Decimal(15, 5)
-  committedQty        Decimal?  @map("committed_qty") @db.Decimal(15, 5)
-  backorderQty        Decimal?  @map("backorder_qty") @db.Decimal(15, 5)
-  purchaseQty         Decimal?  @map("purchase_qty") @db.Decimal(15, 5)
-  altPartNo           String?   @map("alt_part_no") @db.VarChar(40)
-  misc1               String?   @map("misc_1") @db.VarChar(40)
-  misc2               Decimal?  @map("misc_2") @db.Decimal(15, 5)
-  type                String?   @db.VarChar(1)
-  imagePath           String?   @map("image_path") @db.VarChar(261)
-  upload              Boolean?
-  allowBackOrders     Boolean?  @map("allow_back_orders")
-  allowReturns        Boolean?  @map("allow_returns")
-  preferredVendor     String?   @map("preferred_vendor") @db.VarChar(20)
-  dbVersion           Int?      @map("db_version")
-  created             DateTime? @map("_created")
-  createdBy           String?   @map("_created_by") @db.VarChar(3)
-  modified            DateTime? @map("_modified")
-  modifiedBy          String?   @map("_modified_by") @db.VarChar(3)
-  packSize            Decimal?  @map("pack_size") @db.Decimal(9, 3)
-  colorText           BigInt    @map("color_text")
-  colorBack           BigInt    @map("color_back")
-  levyCode            String?   @map("levy_code") @db.VarChar(3)
-  lotNumbered         Boolean   @default(false) @map("lot_numbered")
-  dutyPerc            Decimal?  @map("duty_perc") @db.Decimal(7, 2)
-  freightPerc         Decimal?  @map("freight_perc") @db.Decimal(7, 2)
-  stdCost             Decimal?  @map("std_cost") @db.Decimal(15, 5)
-  lastSerial          String?   @map("last_serial") @db.VarChar(40)
-  dfltExpiryDays      Int?      @map("dflt_expiry_days")
-  expiryRequired      Boolean   @default(false) @map("expiry_required")
-  hsCode              String?   @map("hs_code") @db.VarChar(27)
-  mfgCountry          String?   @map("mfg_country") @db.VarChar(3)
-  rentalWhse          String?   @map("rental_whse") @db.VarChar(6)
-  rentalPartNo        String?   @map("rental_part_no") @db.VarChar(34)
-  rentalDescription   String?   @map("rental_description") @db.VarChar(80)
-  lotConsumeType      Int?      @map("lot_consume_type")
-  taxFlags            Boolean[] @default(dbgenerated("'{f,f,f,f}'::boolean[]")) @map("tax_flags")
-  extendedDescription String?   @map("extended_description") @db.Text
-  udfData             Json?     @map("udf_data") @db.Json
-  lastModified        DateTime? @map("last_modified")
-  lastYearQty         Decimal?  @default(0) @map("last_year_qty") @db.Decimal(15, 5)
-  lastYearRevenue     Decimal?  @default(0) @map("last_year_revenue") @db.Decimal(15, 5)
-  thisYearQty         Decimal?  @default(0) @map("this_year_qty") @db.Decimal(15, 5)
-  thisYearRevenue     Decimal?  @default(0) @map("this_year_revenue") @db.Decimal(15, 5)
-  nextYearQty         Decimal?  @default(0) @map("next_year_qty") @db.Decimal(15, 5)
-  nextYearRevenue     Decimal?  @default(0) @map("next_year_revenue") @db.Decimal(15, 5)
-  lastCountDate       DateTime? @map("last_count_date") @db.Date
-  lastCountQty        Decimal?  @map("last_count_qty") @db.Decimal(15, 5)
-  lastCountVariance   Decimal?  @map("last_count_variance") @db.Decimal(15, 5)
-  showOptions         Boolean?  @map("show_options")
-  lastSaleDate        DateTime? @map("last_sale_date") @db.Date
-  lastReceiptDate     DateTime? @map("last_receipt_date") @db.Date
+  id                 Int       @id
+  whse               String
+  partNo             String
+  description        String?
+  status             Int?
+  availableQty       String?
+  onHandQty          String?
+  backorderQty       String?
+  committedQty       String?
+  onPurchaseQty      String?
+  buyMeasureCode     String?
+  stockMeasureCode   String?
+  sellMeasureCode    String?
+  alternatePartNo    String?
+  currentCost        String?
+  averageCost        String?
+  standardCost       String?
+  groupNo            String?
+  type               String?
+  salesDepartment    String?
+  userDef1           String?
+  userDef2           String?
+  poDueDate          String?
+  currentPONo        String?
+  reorderPoint       String?
+  minimumBuyQty      String?
+  lastYearQty        String?
+  lastYearSales      String?
+  thisYearQty        String?
+  thisYearSales      String?
+  nextYearQty        String?
+  nextYearSales      String?
+  allowBackorders    Boolean?
+  allowReturns       Boolean?
+  dutyPct            String?
+  freightPct         String?
+  defaultExpiryDate  Int?
+  lotConsumeType     Int?
+  manufactureCountry String?
+  harmonizedCode     String?
+  suggestedOrderQty  String?
+  pricing            String?
+  uom                String?
+  packSize           String?
+  foregroundColor    BigInt
+  backgroundColor    BigInt
+  levy               String?
+  primaryVendor      String?
+  allowBackOrders    Boolean?
+  dfltExpiryDays     Int?
+  mfgCountry         String?
+  hsCode             String?
+  serializedMode     String?
+  upload             Boolean?
+  lastModified       String?
+  lastSaleDate       String?
+  lastReceiptDate    String?
+  lastCountDate      String?
+  lastCountQty       String?
+  lastCountVariance  String?
+  created            String?
+  createdBy          String?
+  modified           String?
+  modifiedBy         String?
+  links              String?
 
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("inventory")
-  @@schema("public")
 }
