@@ -3,6 +3,7 @@ import { Inter as FontSans } from "next/font/google";
 
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { QueryProvider } from "@/components/providers/query-provider";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -37,9 +38,11 @@ export default function RootLayout({
           defaultTheme="dark"
           enableSystem={false}
         >
-          <main className="min-h-screen flex flex-col items-center">
-              {children}
-          </main>
+          <QueryProvider>
+            <main className="min-h-screen flex flex-col items-center">
+                {children}
+            </main>
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

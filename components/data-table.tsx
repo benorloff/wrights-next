@@ -27,11 +27,13 @@ import { Button } from "@/components/ui/button";
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
     data: TData[]
+    count: number
 }
 
 export function DataTable<TData, TValue>({
     columns,
     data,
+    count,
 }: DataTableProps<TData, TValue>) {
     const [sorting, setSorting] = useState<SortingState>([]);
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -99,7 +101,7 @@ export function DataTable<TData, TValue>({
             </div>
             <div className="flex items-center justify-between space-x-2 py-4">
                 <div>
-                    {`${data.length.toLocaleString()} products total`}
+                    {`${count.toLocaleString()} total`}
                 </div>
                 <div className="flex flex-row gap-2 items-center">
                         {`Page ${table.getState().pagination.pageIndex + 1} of ${table.getPageCount().toLocaleString()}`}

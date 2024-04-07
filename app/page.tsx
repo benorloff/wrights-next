@@ -41,12 +41,25 @@ import { db } from "@/lib/db"
 import { Inventory } from "@prisma/client"
 import { get } from "http"
 import { GetInventoryButton } from "@/components/inventory/get-inventory-button"
-import { DataTable } from "@/components/inventory/data-table"
+import { DataTable } from "@/components/data-table"
 import { columns } from "@/components/inventory/columns"
 
 async function getInventory() {
-  const data = await db.inventory.findMany();
-  return data;
+  // TODO: Separate count into separate function and cache it
+  const {_count: { _all }} = await db.inventory.aggregate({
+    _count: {
+      _all: true,
+    }
+  });
+  const count = _all;
+  const data = await db.inventory.findMany({
+    take: 10,
+    orderBy: {
+      id: "asc",
+    },
+  });
+
+  return { data, count };
 }
 
 const DashboardPage = async () => {
@@ -189,7 +202,7 @@ const DashboardPage = async () => {
           </Button>
         </header>
         <main className="grid flex-1 gap-4 overflow-auto p-4 md:grid-cols-2 lg:grid-cols-3">
-          <div
+          {/* <div
             className="relative hidden flex-col items-start gap-8 md:flex" x-chunk="dashboard-03-chunk-0"
           >
             <form className="grid w-full items-start gap-6">
@@ -300,9 +313,9 @@ const DashboardPage = async () => {
                 </div>
               </fieldset>
             </form>
-          </div>
-          <div className="relative flex h-full min-h-[50vh] flex-col rounded-xl bg-muted/50 p-4 lg:col-span-2">
-            <DataTable columns={columns} data={inventory} />
+          </div> */}
+          <div className="relative flex h-full min-h-[50vh] flex-col rounded-xl bg-muted/50 p-4 lg:col-span-3">
+            <DataTable columns={columns} data={inventory.data} count={inventory.count}/>
           </div>
         </main>
       </div>
