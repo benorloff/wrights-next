@@ -59,8 +59,8 @@ model Inventory {
   pricing            String?
   uom                String?
   packSize           String?
-  foregroundColor    BigInt
-  backgroundColor    BigInt
+  foregroundColor    String
+  backgroundColor    String
   levy               String?
   primaryVendor      String?
   allowBackOrders    Boolean?

@@ -3,11 +3,6 @@
 import { Inventory, Prisma } from "@prisma/client";
 import { db } from "./db";
 
-const API_URL = process.env.SPIRE_API_URL!;
-const API_USERNAME = process.env.SPIRE_API_USERNAME!;
-const API_PASSWORD = process.env.SPIRE_API_PASSWORD!;
-const COMPANY = process.env.SPIRE_COMPANY!;
-
 export interface getInventoryProps {
     start: number;
     limit: number;
@@ -88,44 +83,7 @@ export const getInventory = async ({
         await db.inventory.createMany({
             data: resources,
             skipDuplicates: true,
-        })
-
-        // resources.map(async (resource) => {
-        //     const { 
-        //         id, 
-        //         salesDepartment,
-        //         pricing,
-        //         uom,
-        //         levy,
-        //         primaryVendor,
-        //         links,
-        //          ...rest 
-        //     } = resource;
-        //     await db.inventory.upsert({
-        //         where: {
-        //             id
-        //         },
-        //         update: {
-        //             salesDepartment: JSON.stringify(salesDepartment),
-        //             pricing: JSON.stringify(pricing),
-        //             uom: JSON.stringify(uom),
-        //             levy: JSON.stringify(levy),
-        //             primaryVendor: JSON.stringify(primaryVendor),
-        //             links: JSON.stringify(links),
-        //             ...rest
-        //         }, 
-        //         create: {
-        //             id,
-        //             salesDepartment: JSON.stringify(salesDepartment),
-        //             pricing: JSON.stringify(pricing),
-        //             uom: JSON.stringify(uom),
-        //             levy: JSON.stringify(levy),
-        //             primaryVendor: JSON.stringify(primaryVendor),
-        //             links: JSON.stringify(links),
-        //             ...rest
-        //         }
-        //     });
-        // })
+        });
 
         resources.length < batchSize ? (
             console.log(`All ${count} resources have been synced.`),

@@ -1,16 +1,10 @@
 import {
   Bird,
-  CornerDownLeft,
-  Mic,
-  Paperclip,
   Rabbit,
-  RefreshCw,
   Settings,
-  Share,
   Turtle,
 } from "lucide-react"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Drawer,
@@ -30,48 +24,18 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 import { Sidebar } from "@/components/sidebar"
-import { db } from "@/lib/db"
-import { Inventory } from "@prisma/client"
-import { get } from "http"
 import { GetInventoryButton } from "@/components/inventory/get-inventory-button"
-import { DataTable } from "@/components/data-table"
-import { columns } from "@/components/inventory/columns"
-
-async function getInventory() {
-  // TODO: Separate count into separate function and cache it
-  const {_count: { _all }} = await db.inventory.aggregate({
-    _count: {
-      _all: true,
-    }
-  });
-  const count = _all;
-  const data = await db.inventory.findMany({
-    take: 10,
-    orderBy: {
-      id: "asc",
-    },
-  });
-
-  return { data, count };
-}
+import { InventoryDataTable } from "@/components/inventory/inventory-data-table"
 
 const DashboardPage = async () => {
-
-  const inventory = await getInventory();
 
   return (
     <div className="grid h-screen w-full pl-[56px]">
       <Sidebar />
       <div className="flex flex-col">
         <header className="sticky top-0 z-10 flex h-[57px] items-center gap-1 border-b bg-background px-4">
-          <h1 className="text-xl font-semibold">Playground</h1>
+          <h1 className="text-xl font-semibold">Inventory</h1>
           <Drawer>
             <DrawerTrigger asChild>
               <Button variant="ghost" size="icon" className="md:hidden">
@@ -192,16 +156,8 @@ const DashboardPage = async () => {
             </DrawerContent>
           </Drawer>
           <GetInventoryButton />
-          <Button
-            variant="outline"
-            size="sm"
-            className="ml-auto gap-1.5 text-sm"
-          >
-            <Share className="size-3.5" />
-            Share
-          </Button>
         </header>
-        <main className="grid flex-1 gap-4 overflow-auto p-4 md:grid-cols-2 lg:grid-cols-3">
+        <main className="grid gap-4 overflow-auto p-4 md:grid-cols-2 lg:grid-cols-3">
           {/* <div
             className="relative hidden flex-col items-start gap-8 md:flex" x-chunk="dashboard-03-chunk-0"
           >
@@ -314,8 +270,8 @@ const DashboardPage = async () => {
               </fieldset>
             </form>
           </div> */}
-          <div className="relative flex h-full min-h-[50vh] flex-col rounded-xl bg-muted/50 p-4 lg:col-span-3">
-            <DataTable columns={columns} data={inventory.data} count={inventory.count}/>
+          <div className="relative flex flex-col rounded-xl bg-muted/50 p-4 lg:col-span-3">
+            <InventoryDataTable />
           </div>
         </main>
       </div>

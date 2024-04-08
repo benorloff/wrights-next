@@ -1,13 +1,16 @@
-"use client";
+"use client"
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 import {
-    ColumnDef,
     ColumnFiltersState,
+    PaginationState,
     SortingState,
+    VisibilityState,
     flexRender,
     getCoreRowModel,
+    getFacetedRowModel,
+    getFacetedUniqueValues,
     getFilteredRowModel,
     getPaginationRowModel,
     getSortedRowModel,
@@ -22,39 +25,71 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
+import { DataTablePagination } from "@/components/data-table/data-table-pagination";
 
-interface DataTableProps<TData, TValue> {
-    columns: ColumnDef<TData, TValue>[]
-    data: TData[]
-    count: number
-}
 
-export function DataTable<TData, TValue>({
-    columns,
-    data,
-    count,
-}: DataTableProps<TData, TValue>) {
+import { columns } from "@/components/inventory/columns"
+import { useQuery, keepPreviousData } from "@tanstack/react-query"
+
+export function InventoryDataTable() {
+
     const [sorting, setSorting] = useState<SortingState>([]);
-    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]); 
+    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+    const [rowSelection, setRowSelection] = useState({});
+    // const [pagination, setPagination] = useState<PaginationState>({
+    //     pageIndex: 0,
+    //     pageSize: 10,
+    // })
+
+    const inventoryColumns = useMemo(() => columns, [])
+
+    // const countQuery = useQuery({
+    //     queryKey: ['inventoryCount'],
+    //     queryFn: () => fetch('/api/inventory/count').then((res) => res.json()),
+    //     staleTime: 600 * 1000,
+    // })
+
+    const inventoryQuery = useQuery({
+        // queryKey: ['inventory', pagination],
+        // queryFn: () => fetch(`/api/inventory?start=${pagination.pageIndex}&limit=${pagination.pageSize}`)
+        //     .then((res) => res.json()),
+        queryKey: ['inventory'],
+        queryFn: () => fetch(`/api/inventory`).then((res) => res.json()),
+    })
+
+    const defaultData = useMemo(() => [], [])
 
     const table = useReactTable({
-        data,
-        columns,
+        data: inventoryQuery.data ?? defaultData,
+        columns: columns,
+        enableRowSelection: true,
         getCoreRowModel: getCoreRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
-        onSortingChange: setSorting,
-        getSortedRowModel: getSortedRowModel(),
-        onColumnFiltersChange: setColumnFilters,
         getFilteredRowModel: getFilteredRowModel(),
+        getSortedRowModel: getSortedRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
+        getFacetedRowModel: getFacetedRowModel(),
+        getFacetedUniqueValues: getFacetedUniqueValues(),
+        onSortingChange: setSorting,
+        onColumnFiltersChange: setColumnFilters,
+        onColumnVisibilityChange: setColumnVisibility,
+        onRowSelectionChange: setRowSelection,
+        // onPaginationChange: setPagination,
+        // manualPagination: true,
+        // rowCount: countQuery.data?.data,
         state: {
+            // pagination,
             sorting,
             columnFilters,
-        },  
+            columnVisibility,
+            rowSelection,
+        }, 
     })
 
     return (
-        <div>
+        <div className="space-y-4">
+            <DataTableToolbar table={table} />
             <div className="border rounded-md">
                 <Table>
                 <TableHeader>
@@ -92,37 +127,14 @@ export function DataTable<TData, TValue>({
                     ) : (
                     <TableRow>
                         <TableCell colSpan={columns.length} className="h-24 text-center">
-                        No results.
+                        Loading...
                         </TableCell>
                     </TableRow>
                     )}
                 </TableBody>
                 </Table>
             </div>
-            <div className="flex items-center justify-between space-x-2 py-4">
-                <div>
-                    {`${count.toLocaleString()} total`}
-                </div>
-                <div className="flex flex-row gap-2 items-center">
-                        {`Page ${table.getState().pagination.pageIndex + 1} of ${table.getPageCount().toLocaleString()}`}
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => table.previousPage()}
-                        disabled={!table.getCanPreviousPage()}
-                    >
-                        Previous
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => table.nextPage()}
-                        disabled={!table.getPaginationRowModel}
-                    >
-                        Next
-                    </Button>
-                </div>
-            </div>
+            <DataTablePagination table={table} />
         </div>
     )
 };
