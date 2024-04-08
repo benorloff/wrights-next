@@ -5,6 +5,7 @@ import {
     Bot,
     Code2,
     LifeBuoy,
+    Package,
     Settings2,
     SquareTerminal,
     SquareUser,
@@ -19,33 +20,39 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { ThemeModeToggle } from "@/components/theme-mode-toggle"
+import Link from "next/link"
 
 export const Sidebar = () => {
     return (
         <aside className="inset-y fixed  left-0 z-20 flex h-full flex-col border-r">
         <div className="border-b p-2">
-          <Button variant="outline" size="icon" aria-label="Home">
-            <Triangle className="size-5 fill-foreground" />
-          </Button>
+          <Link href="/">
+            <Button variant="outline" size="icon" aria-label="Home">
+              <Triangle className="size-5 fill-foreground" />
+            </Button>
+          </Link>
         </div>
         <nav className="grid gap-1 p-2">
           <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-lg bg-muted"
-                aria-label="Playground"
-              >
-                <SquareTerminal className="size-5" />
-              </Button>
+              <Link href="/">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-lg bg-muted"
+                  aria-label="Playground"
+                >
+                  <Package className="size-5" />
+                </Button>
+              </Link>
             </TooltipTrigger>
             <TooltipContent side="right" sideOffset={5}>
-              Playground
+              Inventory
             </TooltipContent>
           </Tooltip>
-          <Tooltip>
+          </TooltipProvider>
+          {/* <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 variant="ghost"
@@ -104,8 +111,8 @@ export const Sidebar = () => {
             <TooltipContent side="right" sideOffset={5}>
               Settings
             </TooltipContent>
-          </Tooltip>
-          </TooltipProvider>
+          </Tooltip> */}
+          {/* </TooltipProvider> */}
         </nav>
         <nav className="mt-auto grid gap-1 p-2">
           <TooltipProvider>

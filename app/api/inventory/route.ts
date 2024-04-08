@@ -20,7 +20,9 @@ export async function GET(
         orderBy: {
           id: "asc",
         },
-      }
+        // Temporarily taking only 1000 records to avoid performance issues
+        take: 1000,
+      }, 
     );
     // console.log(data, '<-- data from route handler');
     return NextResponse.json(data);

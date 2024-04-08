@@ -54,7 +54,7 @@ export function DataTableRowActions<TData>({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[160px]">
-        <Link href={`/inventory/${row.getValue("id")}`}>
+        <Link href={`/inventory/${row.getValue("id")}`} passHref>
           <DropdownMenuItem>
             Edit
           </DropdownMenuItem>
