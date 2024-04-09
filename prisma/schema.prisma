@@ -18,7 +18,7 @@ model Inventory {
   id                 Int       @id
   whse               String
   partNo             String
-  description        String?
+  description        String? @db.VarChar(80)
   status             Int?
   availableQty       String?
   onHandQty          String?
