@@ -1,36 +1,92 @@
-import { CollapsibleCard } from "@/components/collapsible-card";
-import { getInventory } from "@/lib/spire";
 import { Inventory, Prisma } from "@prisma/client";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { 
-    Form, 
-    FormControl, 
-    FormField, 
-    FormItem,
-    FormLabel, 
-    FormMessage 
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { InventoryItemForm } from "@/components/inventory/inventory-item-form";
-import { db } from "@/lib/db";
+import { InventoryWithSelect, db, getItemById } from "@/lib/db";
+import Image from "next/image"
+import Link from "next/link"
+import {
+  ChevronLeft,
+  Home,
+  LineChart,
+  Package,
+  Package2,
+  PanelLeft,
+  PlusCircle,
+  Search,
+  Settings,
+  ShoppingCart,
+  Upload,
+  Users2,
+} from "lucide-react"
 
+import { Badge } from "@/components/ui/badge"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/components/ui/toggle-group"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { InventoryItemForm } from "@/components/inventory/inventory-item-form";
 
 // async function getInventoryItem(id: string) {
-//     const res = await fetch(`http://localhost:3000/api/inventory/${id}`);
-//     const { data } = await res.json();
-//     return data;
+//     const item = await db.inventory.findUnique({
+//         where: {
+//             id: parseInt(id),
+//         },
+//         select: {
+//             id: true,
+//             whse: true,
+//             partNo: true,
+//             description: true,
+//         }
+//     });
+//     return item;
 // }
-
-async function getInventoryItem(id: string) {
-    const item = await db.inventory.findUnique({
-        where: {
-            id: parseInt(id),
-        }
-    });
-    return { ...item } as Inventory;
-}
 
 // Inventory Item Component
 const InventoryItemPage = async ({
@@ -39,10 +95,10 @@ const InventoryItemPage = async ({
     params: { id: string };
 }) => {
     
-    const item: Inventory = await getInventoryItem(params.id);
+    const item: InventoryWithSelect = await getItemById(params.id);
 
     return (
-        <InventoryItemForm item={item} />
+        <InventoryItemForm item={item as InventoryWithSelect} />
     )
 }
 

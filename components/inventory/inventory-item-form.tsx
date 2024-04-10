@@ -1,101 +1,198 @@
 "use client"
 
-import { CollapsibleCard } from "@/components/collapsible-card";
-import { getInventory } from "@/lib/spire";
-import { Inventory, Prisma, PrismaClient } from "@prisma/client";
-import { useForm, DefaultValues } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { 
-    Form, 
-    FormControl, 
-    FormField, 
-    FormItem,
-    FormLabel, 
-    FormMessage 
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { Textarea } from "../ui/textarea";
-import { db } from "@/lib/db";
 
-// const inventoryItem = Prisma.validator<Prisma.InventoryDefaultArgs>()({})
+import Image from "next/image"
+import Link from "next/link"
 
-// export type InventoryItem = Prisma.InventoryGetPayload<typeof inventoryItem>
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
+import { Inventory, Prisma } from "@prisma/client";
+import { db, warehouses } from "@/lib/db";
+import {
+  ChevronLeft,
+  Home,
+  LineChart,
+  Package,
+  Package2,
+  PanelLeft,
+  PlusCircle,
+  Search,
+  Settings,
+  ShoppingCart,
+  Upload,
+  Users2,
+} from "lucide-react"
 
-// Temporary workaround to create a schema for the response object from Prisma model
-// Unable to use Prisma generated model type due to nullable fields throwing type errors
-// https://www.prisma.io/docs/orm/prisma-client/type-safety/operating-against-partial-structures-of-model-types
-// const InventorySchema = z.object({
-//     id: z.number(),
-//     whse: z.string().max(6, { message: 'Must be 6 or less characters' }),
-//     partNo: z.string().max(34, { message: 'Must be 34 or less characters' }),
-//     description: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     status: z.number().nullish(),
-//     availableQty: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     onHandQty: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     backorderQty: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     committedQty: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     onPurchaseQty: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     buyMeasureCode: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     stockMeasureCode: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     sellMeasureCode: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     alternatePartNo: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     currentCost: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     averageCost: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     standardCost: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     groupNo: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     type: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     salesDepartment: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     userDef1: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     userDef2: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     poDueDate: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     currentPONo: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     reorderPoint: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     minimumBuyQty: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     lastYearQty: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     lastYearSales: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     thisYearQty: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     thisYearSales: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     nextYearQty: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     nextYearSales: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     allowBackorders: z.boolean().nullish(),
-//     allowReturns: z.boolean().nullish(),
-//     dutyPct: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     freightPct: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     defaultExpiryDate: z.number().nullish(),
-//     lotConsumeType: z.number().nullish(),
-//     manufactureCountry: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     harmonizedCode: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     suggestedOrderQty: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     pricing: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     uom: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     packSize: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     foregroundColor: z.string(),
-//     backgroundColor: z.string(),
-//     levy: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     primaryVendor: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     allowBackOrders: z.boolean().nullish(),
-//     dfltExpiryDays: z.number().nullish(),
-//     mfgCountry: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     hsCode: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     serializedMode: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     upload: z.boolean().nullish(),
-//     lastModified: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     lastSaleDate: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     lastReceiptDate: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     lastCountDate: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     lastCountQty: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     lastCountVariance: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     created: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     createdBy: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     modified: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     modifiedBy: z.string().optional() || z.undefined() || z.ZodReadonly,
-//     links: z.string().optional() || z.undefined() || z.ZodReadonly,
-// });
+import { Badge } from "@/components/ui/badge"
+import {
+    Form,
+    FormField,
+    FormLabel,
+    FormMessage,
+    FormControl,
+    FormItem,
+} from "@/components/ui/form"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { Button } from "@/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Textarea } from "@/components/ui/textarea"
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/components/ui/toggle-group"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { useAction } from "@/hooks/use-action";
+import { updateInventoryItem } from "@/actions/update-inventory-item";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
-// export type FormType = z.infer<typeof InventorySchema>;
+const unitEnum = z.enum(['in', 'cm', 'mm']);
+const phaseEnum = z.enum(['1', '2', '3']);
+
+export const InventoryItemSchema = z.object({
+    brand: z.string().max(34, { message: 'Part Number must be 34 characters or less'}).optional(),
+    // TODO: Create db table to store features
+    // Get all features from db on render and pass to field validation as enum
+    // Render as "tag cloud" with chips and option to add new feature(s)
+    features: z.string().array().optional(),
+    // Zod .partial method makes all properties optional
+    // https://zod.dev/?id=partial
+    images: z.object({
+        featured: z.string().url(),
+        image1: z.string().url(),
+        image2: z.string().url(),
+        image3: z.string().url(),
+        image4: z.string().url(),
+        image5: z.string().url(),
+    }).partial(),
+    dimensions: z.object({
+        length: z.coerce.number(),
+        width: z.coerce.number(),
+        height: z.coerce.number(),
+        unit: unitEnum,
+    }).partial(),
+    docs: z.object({
+        cadUrl: z.string().url(),
+        catalogPageUrl: z.string().url(),
+        dataSheetUrl: z.string().url(),
+        userManualUrl: z.string().url(),
+    }).partial(),
+    specs: z.object({
+        power: z.object({
+            ratingHp: z.number(),
+            ratingHp2: z.string(),
+            ratingKw: z.number(),
+            maxSpeed: z.number(),
+            speed2: z.string(),
+            voltage: z.string(),
+            phase: phaseEnum,
+            current: z.string(),
+            current2: z.string(),
+            downThrust: z.string(),
+            duty: z.string(),
+            efficiency: z.string(),
+            electricalType: z.string(),
+            startingType: z.string(),
+        }).partial(),
+        frame: z.object({
+            prefix: z.string(),
+            size: z.string(),
+            suffix: z.string(),
+            length: z.number(),
+            lengthMm: z.number(),
+            material: z.string(),
+            type: z.string(),
+        }).partial(),
+        enclosureType: z.string(),
+        // Question: Can rotation be enum?
+        rotation: z.string(),
+        mountingType: z.string(),
+        maxAmbient: z.string(),
+        boxMounting: z.string(),
+        baseDiameter: z.string(),
+        shaft: z.object({
+            diameter: z.string(),
+            diameterMm: z.number(),
+            extension: z.string(),
+            extensionMm: z.number(),
+            type: z.string(),
+        }).partial(),
+        cDimMm: z.number(),
+        cDimIn: z.number(),
+        connectionDrawingNo: z.string(),
+        deBearingSize: z.string(),
+        deBearingType: z.string(),
+        frequency: z.string(),
+        hazardousLocation: z.string(),
+        insulationClass: z.string(),
+        ipCode: z.string(),
+        kvaCode: z.string(),
+        motorOrientation: z.string(),
+        nemaDesign: z.string(),
+        numPoles: z.string(),
+        numSpeeds: z.string(),
+        odeBearingSize: z.string(),
+        odeBearingType: z.string(),
+        outlineDrawingNo: z.string(),
+        powerFactor: z.string(),
+        resistanceMain: z.string(),
+        serviceFactor: z.number(),
+        thruBoltsExt: z.string(),
+        overload: z.string(),
+    }).partial(),
+    certs: z.object({
+        ce: z.boolean(),
+        csa: z.boolean(),
+        ul: z.boolean(),
+    }).partial(),
+});
 
 export const InventoryItemForm = ({
     item
@@ -105,180 +202,458 @@ export const InventoryItemForm = ({
 
     const [isEditing, setIsEditing] = useState<boolean>(false);
 
-    const form = useForm({
-        // resolver: zodResolver(InventoryItem),
-        defaultValues: {
-            ...item
-        },
+    const router = useRouter();
+
+    const form = useForm<z.infer<typeof InventoryItemSchema>>({
+        resolver: zodResolver(InventoryItemSchema),
     });
 
-    const onSubmit = (values: any) => {
-        console.log(values, '<-- values from onSubmit')
+    const { execute, isLoading } = useAction(updateInventoryItem, {
+        onSuccess: () => {
+            toast.success('UDF fields updated successfully');
+            router.refresh();
+        },
+        onError: (error) => {
+            toast.error(error);
+        }
+    })
+
+    const onSubmit = (values: z.infer<typeof InventoryItemSchema>) => {
+        console.log("submit button clicked")
+        // const { id, ...rest } = values;
+        execute(values);
     };
 
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
-                <div className="grid flex-1 gap-4 overflow-auto p-4 md:grid-cols-2 lg:grid-cols-3">
-                    <div className="flex flex-col h-full rounded-lg gap-4">
-                        <div className="text-lg">Product ID: {item.id}</div>
-                        <CollapsibleCard title="General">
-                            <div className="grid grid-cols-2 gap-2">
+                <div className="mx-auto grid w-full flex-1 auto-rows-max gap-4 p-4">
+                    <div className="flex items-center gap-4">
+                    <Button variant="outline" size="icon" className="h-7 w-7">
+                        <ChevronLeft className="h-4 w-4" />
+                        <span className="sr-only">Back</span>
+                    </Button>
+                    <h1 className="flex-1 shrink-0 whitespace-nowrap text-xl font-semibold tracking-tight sm:grow-0">
+                        {`${item?.partNo} - ${item?.description}`}
+                    </h1>
+                    <Badge variant="outline" className="ml-auto sm:ml-0">
+                        In stock
+                    </Badge>
+                    <div className="hidden items-center gap-2 md:ml-auto md:flex">
+                        <Button variant="outline" size="sm">
+                        Discard
+                        </Button>
+                        <Button size="sm" onClick={form.handleSubmit(onSubmit)}>
+                            Save Product
+                        </Button>
+                    </div>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-[1fr_250px] lg:grid-cols-3 lg:gap-8">
+                    <div className="grid auto-rows-max items-start gap-4 lg:col-span-2 lg:gap-8">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>General</CardTitle>
+                                <CardDescription>
+                                Lipsum dolor sit amet, consectetur adipiscing elit
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="grid grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <FormLabel>Part #</FormLabel>
+                                    <Input disabled placeholder={item?.partNo} />
+                                </div>
+                                <div className="space-y-2">
+                                    <FormLabel>Warehouse</FormLabel>
+                                    <Input disabled placeholder={item?.whse} />
+                                </div>
+                                <div className="space-y-2">
+                                    <FormLabel>Description</FormLabel>
+                                    <Input disabled placeholder={item?.description} />
+                                </div>
                                 <FormField
                                     control={form.control}
-                                    name="partNo"
+                                    name="brand"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Part Number</FormLabel>
+                                            <FormLabel>Brand</FormLabel>
                                             <FormControl>
-                                                <Input 
-                                                    {...field}
-                                                    disabled={!isEditing}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="whse"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Warehouse</FormLabel>
-                                            <FormControl>
-                                                <Input 
-                                                    {...field}
-                                                    disabled={!isEditing}
-                                                />
+                                                <Input disabled {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
                                 <div className="col-span-2">
+                                    <FormField
+                                        control={form.control}
+                                        name="features"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Features</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                                <div className="col-span-2">
+                                    <div className="space-y-2">
+                                        <FormLabel>Extended Description</FormLabel>
+                                        <FormControl>
+                                            <Textarea
+                                                disabled
+                                                rows={5}
+                                            />
+                                        </FormControl>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Stock</CardTitle>
+                                <CardDescription>
+                                Lipsum dolor sit amet, consectetur adipiscing elit
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                    <TableHead className="w-[100px]">SKU</TableHead>
+                                    <TableHead>Stock</TableHead>
+                                    <TableHead>Price</TableHead>
+                                    <TableHead className="w-[100px]">Size</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    <TableRow>
+                                    <TableCell className="font-semibold">
+                                        GGPC-001
+                                    </TableCell>
+                                    <TableCell>
+                                        <Label htmlFor="stock-1" className="sr-only">
+                                        Stock
+                                        </Label>
+                                        <Input
+                                        id="stock-1"
+                                        type="number"
+                                        defaultValue="100"
+                                        />
+                                    </TableCell>
+                                    <TableCell>
+                                        <Label htmlFor="price-1" className="sr-only">
+                                        Price
+                                        </Label>
+                                        <Input
+                                        id="price-1"
+                                        type="number"
+                                        defaultValue="99.99"
+                                        />
+                                    </TableCell>
+                                    <TableCell>
+                                        <ToggleGroup
+                                        type="single"
+                                        defaultValue="s"
+                                        variant="outline"
+                                        >
+                                        <ToggleGroupItem value="s">S</ToggleGroupItem>
+                                        <ToggleGroupItem value="m">M</ToggleGroupItem>
+                                        <ToggleGroupItem value="l">L</ToggleGroupItem>
+                                        </ToggleGroup>
+                                    </TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                    <TableCell className="font-semibold">
+                                        GGPC-002
+                                    </TableCell>
+                                    <TableCell>
+                                        <Label htmlFor="stock-2" className="sr-only">
+                                        Stock
+                                        </Label>
+                                        <Input
+                                        id="stock-2"
+                                        type="number"
+                                        defaultValue="143"
+                                        />
+                                    </TableCell>
+                                    <TableCell>
+                                        <Label htmlFor="price-2" className="sr-only">
+                                        Price
+                                        </Label>
+                                        <Input
+                                        id="price-2"
+                                        type="number"
+                                        defaultValue="99.99"
+                                        />
+                                    </TableCell>
+                                    <TableCell>
+                                        <ToggleGroup
+                                        type="single"
+                                        defaultValue="m"
+                                        variant="outline"
+                                        >
+                                        <ToggleGroupItem value="s">S</ToggleGroupItem>
+                                        <ToggleGroupItem value="m">M</ToggleGroupItem>
+                                        <ToggleGroupItem value="l">L</ToggleGroupItem>
+                                        </ToggleGroup>
+                                    </TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                    <TableCell className="font-semibold">
+                                        GGPC-003
+                                    </TableCell>
+                                    <TableCell>
+                                        <Label htmlFor="stock-3" className="sr-only">
+                                        Stock
+                                        </Label>
+                                        <Input
+                                        id="stock-3"
+                                        type="number"
+                                        defaultValue="32"
+                                        />
+                                    </TableCell>
+                                    <TableCell>
+                                        <Label htmlFor="price-3" className="sr-only">
+                                        Stock
+                                        </Label>
+                                        <Input
+                                        id="price-3"
+                                        type="number"
+                                        defaultValue="99.99"
+                                        />
+                                    </TableCell>
+                                    <TableCell>
+                                        <ToggleGroup
+                                        type="single"
+                                        defaultValue="s"
+                                        variant="outline"
+                                        >
+                                        <ToggleGroupItem value="s">S</ToggleGroupItem>
+                                        <ToggleGroupItem value="m">M</ToggleGroupItem>
+                                        <ToggleGroupItem value="l">L</ToggleGroupItem>
+                                        </ToggleGroup>
+                                    </TableCell>
+                                    </TableRow>
+                                </TableBody>
+                                </Table>
+                            </CardContent>
+                            <CardFooter className="justify-center border-t p-4">
+                                <Button size="sm" variant="ghost" className="gap-1">
+                                <PlusCircle className="h-3.5 w-3.5" />
+                                Add Variant
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                        <Card x-chunk="dashboard-07-chunk-2">
+                        <CardHeader>
+                            <CardTitle>Product Category</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid gap-6 sm:grid-cols-3">
+                            <div className="grid gap-3">
+                                <Label htmlFor="category">Category</Label>
+                                <Select>
+                                <SelectTrigger
+                                    id="category"
+                                    aria-label="Select category"
+                                >
+                                    <SelectValue placeholder="Select category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="clothing">Clothing</SelectItem>
+                                    <SelectItem value="electronics">
+                                    Electronics
+                                    </SelectItem>
+                                    <SelectItem value="accessories">
+                                    Accessories
+                                    </SelectItem>
+                                </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="grid gap-3">
+                                <Label htmlFor="subcategory">
+                                Subcategory (optional)
+                                </Label>
+                                <Select>
+                                <SelectTrigger
+                                    id="subcategory"
+                                    aria-label="Select subcategory"
+                                >
+                                    <SelectValue placeholder="Select subcategory" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="t-shirts">T-Shirts</SelectItem>
+                                    <SelectItem value="hoodies">Hoodies</SelectItem>
+                                    <SelectItem value="sweatshirts">
+                                    Sweatshirts
+                                    </SelectItem>
+                                </SelectContent>
+                                </Select>
+                            </div>
+                            </div>
+                        </CardContent>
+                        </Card>
+                    </div>
+                    <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Dimensions</CardTitle>
+                                <CardDescription>
+                                Lipsum dolor sit amet, consectetur adipiscing elit.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="grid grid-cols-2 gap-6">
                                 <FormField
                                     control={form.control}
-                                    name="description"
+                                    name="dimensions.length"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Description</FormLabel>
+                                            <FormLabel>Length</FormLabel>
                                             <FormControl>
-                                                <Input 
-                                                    disabled={!isEditing}
-                                                    {...field} 
-                                                />
+                                                <Input placeholder="0.00" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
-                                </div>
+                                <FormField
+                                    control={form.control}
+                                    name="dimensions.width"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Width</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="0.00" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="dimensions.height"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Height</FormLabel>
+                                            <FormControl>
+                                                <Input placeholder="0.00" {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="dimensions.unit"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Unit</FormLabel>
+                                            <Select onValueChange={field.onChange}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Select unit" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {unitEnum._def.values.map((unit) => (
+                                                        <SelectItem key={unit} value={unit}>
+                                                            {unit}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </CardContent>
+                        </Card>
+                        <Card>
+                        <CardHeader>
+                            <CardTitle>Product Status</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid gap-6">
+                            <div className="grid gap-3">
+                                <Label htmlFor="status">Status</Label>
+                                <Select>
+                                <SelectTrigger id="status" aria-label="Select status">
+                                    <SelectValue placeholder="Select status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="draft">Draft</SelectItem>
+                                    <SelectItem value="published">Active</SelectItem>
+                                    <SelectItem value="archived">Archived</SelectItem>
+                                </SelectContent>
+                                </Select>
                             </div>
-                        </CollapsibleCard>
-                        <CollapsibleCard title="Quantities">
-                            <div className="grid grid-cols-2 gap-2">
-                                <div className="col-span-1">
-                                    <FormField
-                                        control={form.control}
-                                        name="availableQty"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Available</FormLabel>
-                                                <FormControl>
-                                                    <Input 
-                                                        {...field}
-                                                        disabled={!isEditing}
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-                                <div className="col-span-1">
-                                    <FormField
-                                        control={form.control}
-                                        name="onHandQty"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>On Hand</FormLabel>
-                                                <FormControl>
-                                                    <Input 
-                                                        {...field}
-                                                        disabled={!isEditing}
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-                                <div className="col-span-1">
-                                    <FormField
-                                        control={form.control}
-                                        name="backorderQty"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Backorder</FormLabel>
-                                                <FormControl>
-                                                    <Input 
-                                                        disabled={!isEditing}
-                                                        {...field} 
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-                                <div className="col-span-1">
-                                    <FormField
-                                        control={form.control}
-                                        name="committedQty"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Committed</FormLabel>
-                                                <FormControl>
-                                                    <Input 
-                                                        disabled={!isEditing}
-                                                        {...field} 
-                                                    />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
                             </div>
-                        </CollapsibleCard>
-                        <CollapsibleCard title="Section 3">
-                            <div>{item.partNo}</div>
-                        </CollapsibleCard>
+                        </CardContent>
+                        </Card>
+                        <Card
+                        className="overflow-hidden" x-chunk="dashboard-07-chunk-4"
+                        >
+                        <CardHeader>
+                            <CardTitle>Product Images</CardTitle>
+                            <CardDescription>
+                            Lipsum dolor sit amet, consectetur adipiscing elit
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid gap-2">
+                            <Image
+                                alt="Product image"
+                                className="aspect-square w-full rounded-md object-cover"
+                                height="300"
+                                src="/placeholder.svg"
+                                width="300"
+                            />
+                            <div className="grid grid-cols-3 gap-2">
+                                <button>
+                                <Image
+                                    alt="Product image"
+                                    className="aspect-square w-full rounded-md object-cover"
+                                    height="84"
+                                    src="/placeholder.svg"
+                                    width="84"
+                                />
+                                </button>
+                                <button>
+                                <Image
+                                    alt="Product image"
+                                    className="aspect-square w-full rounded-md object-cover"
+                                    height="84"
+                                    src="/placeholder.svg"
+                                    width="84"
+                                />
+                                </button>
+                                <button>
+                                <Image
+                                    alt="Product image"
+                                    className="aspect-square w-full rounded-md object-cover"
+                                    height="84"
+                                    src="/placeholder.svg"
+                                    width="84"
+                                />
+                                </button>
+                                <button className="flex aspect-square w-full items-center justify-center rounded-md border border-dashed">
+                                <Upload className="h-4 w-4 text-muted-foreground" />
+                                <span className="sr-only">Upload</span>
+                                </button>
+                            </div>
+                            </div>
+                        </CardContent>
+                        </Card>
                     </div>
-                    <div className="flex flex-col h-full rounded-lg gap-4">
-                        <div className="text-lg">Column 2</div>
-                        <CollapsibleCard title="Section 1">
-                            <div>Something</div>
-                        </CollapsibleCard>
-                        <CollapsibleCard title="Section 2">
-                            <div>Something</div>
-                        </CollapsibleCard>
-                        <CollapsibleCard title="Section 3">
-                            <div>Something</div>
-                        </CollapsibleCard>
                     </div>
-                    <div className="flex flex-col h-full rounded-lg gap-4">
-                        <div className="text-lg">Column 3</div>
-                        <CollapsibleCard title="Section 1">
-                            <div>Something</div>
-                        </CollapsibleCard>
-                        <CollapsibleCard title="Section 2">
-                            <div>Something</div>
-                        </CollapsibleCard>
-                        <CollapsibleCard title="Section 3">
-                            <div>Something</div>
-                        </CollapsibleCard>
+                    <div className="flex items-center justify-center gap-2 md:hidden">
+                    <Button variant="outline" size="sm">
+                        Discard
+                    </Button>
+                    <Button size="sm" type="submit">Save Product</Button>
                     </div>
                 </div>
             </form>

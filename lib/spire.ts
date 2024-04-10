@@ -16,6 +16,11 @@ export interface getInventoryProps {
 let offset: number = 0;
 let batchSize: number = 5000;
 
+const API_URL = process.env.SPIRE_API_URL!;
+const API_USERNAME = process.env.SPIRE_API_USERNAME!;
+const API_PASSWORD = process.env.SPIRE_API_PASSWORD!;
+const COMPANY = process.env.SPIRE_API_COMPANY_NAME!;
+
 export const getInventory = async ({
     start,
     limit,
@@ -25,11 +30,6 @@ export const getInventory = async ({
     search,
     fields,
 }: getInventoryProps) => {
-
-    const API_URL = process.env.SPIRE_API_URL!;
-    const API_USERNAME = process.env.SPIRE_API_USERNAME!;
-    const API_PASSWORD = process.env.SPIRE_API_PASSWORD!;
-    const COMPANY = process.env.SPIRE_API_COMPANY_NAME!;
 
     batchSize = limit;
 

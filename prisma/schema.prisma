@@ -5,7 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider        = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -15,10 +15,10 @@ datasource db {
 }
 
 model Inventory {
-  id                 Int       @id
+  id                 Int      @id
   whse               String
   partNo             String
-  description        String? @db.VarChar(80)
+  description        String?  @db.VarChar(80)
   status             Int?
   availableQty       String?
   onHandQty          String?
@@ -81,8 +81,91 @@ model Inventory {
   modifiedBy         String?
   links              String?
 
+  udf Udf?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("inventory")
+}
+
+model Udf {
+  id                  Int      @id @default(autoincrement())
+  brand               String?
+  features            String[]
+  featuredImageUrl    String?
+  imageUrls           String[]
+  dimensionLength     Float?
+  dimensionWidth      Float?
+  dimensionHeight     Float?
+  dimensionUnit       String?
+  docCadUrl           String?
+  docCatalogPageUrl   String?
+  docDataSheetUrl     String?
+  docUserManualUrl    String?
+  powerRatingHp       Float?
+  powerRatingHp2      String?
+  powerRatingKw       Float?
+  powerMaxSpeed       Float?
+  powerSpeed2         String?
+  powerVoltage        String?
+  powerPhase          String?
+  powerCurrent        String?
+  powerCurrent2       String?
+  powerDownThrust     String?
+  powerDuty           String?
+  powerEfficiency     String?
+  powerElectricalType String?
+  powerStartingType   String?
+  framePrefix         String?
+  frameSize           String?
+  frameSuffix         String?
+  frameLength         Float?
+  frameLengthMm       Float?
+  frameMaterial       String?
+  frameType           String?
+  enclosureType       String?
+  rotation            String?
+  mountingType        String?
+  maxAmbient          String?
+  boxMounting         String?
+  baseDiameter        String?
+  shaftDiameter       String?
+  shaftDiameterMm     Float?
+  shaftExtension      String?
+  shaftExtensionMm    Float?
+  shaftType           String?
+  cDimMm              Float?
+  cDimIn              Float?
+  connectionDrawingNo String?
+  deBearingSize       String?
+  deBearingType       String?
+  frequency           String?
+  hazardousLocation   String?
+  insulationClass     String?
+  ipCode              String?
+  kvaCode             String?
+  motorOrientation    String?
+  nemaDesign          String?
+  numPoles            String?
+  numSpeeds           String?
+  odeBearingSize      String?
+  odeBearingType      String?
+  outlineDrawingNo    String?
+  powerFactor         String?
+  resistanceMain      String?
+  serviceFactor       Float?
+  thruBoltsExt        String?
+  overload            String?
+  certCe              Boolean?
+  certCsa             Boolean?
+  certUl              Boolean?
+
+  product   Inventory @relation(fields: [productId], references: [id])
+  productId Int       @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("udf")
 }
