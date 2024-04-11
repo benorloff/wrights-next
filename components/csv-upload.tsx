@@ -1,110 +1,30 @@
 "use client"
 
-import { UploadButton, UploadDropzone } from "@/utils/uploadthing"
-import { Button } from "./ui/button"
-import { Input } from "./ui/input"
 import { useEffect, useState } from "react"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form"
-import Papa from "papaparse";
-import { ClientUploadedFileData } from "uploadthing/types"
-import { formatFileSize } from "@/utils/format-file-size"
 import Link from "next/link"
-import { Prisma } from "@prisma/client"
 
-interface ParseResults {
-    data: {
-        [key: string]: [value: string | number | boolean | null]
-    }[],
-    errors: {
-        type: string, 
-        code: string, 
-        message: string, 
-        row: number
-    }[],
-    meta: {
-        aborted: boolean, 
-        cursor: number, 
-        delimiter: string, 
-        fields: string[], 
-        linebreak: string, 
-        truncated: boolean
-    },
-    file: string,
-}
+import Papa from "papaparse";
 
-interface FileUploadResponse {
-    name: string,
-    url: string,
-    size: number,
-    type: string
-}
-
-interface ParseAnalysis {
-    valid: boolean,
-    meta: {
-        hasProductId: boolean,
-        hasDuplicateProductId: boolean,
-        invalidFields: string[]
-    }
-}
+import { 
+    CsvParseResults,
+    CsvUploadResponse,
+    CsvParseAnalysis,
+    formatFileSize, 
+    checkParseResults
+} from "@/utils/csv"
+import { UploadDropzone } from "@/utils/uploadthing"
+import { Button } from "@/components/ui/button"
+import { useAction } from "@/hooks/use-action";
+import { udfBulkUpdate } from "@/actions/udf-bulk-update";
+import { UdfBulkUpdateSchema } from "@/actions/udf-bulk-update/schema";
 
 type Step = "upload" | "parse" | "review" | "complete";
 
-function checkParseResults(parseResults: ParseResults) {
-    
-    let isFileValid: boolean = false;
-    let hasProductId: boolean = false;
-    let hasDuplicateProductId: boolean = false;
-    let invalidFields: string[] = [];
-    
-    const fields = parseResults?.meta.fields;
-    
-    // Check if the CSV has a "productId" field
-    hasProductId = fields?.includes("productId");
-
-    // Check if there are duplicate productIds
-    if (hasProductId) {
-        const productIds = new Set();
-
-        parseResults?.data.forEach((row) => {
-            productIds.add(row.productId)
-        })
-
-        hasDuplicateProductId = productIds.size !== parseResults?.data.length;
-    }
-    
-    // Prisma generate type enum for UDF model
-    const validFields = Prisma.UdfScalarFieldEnum;
-    // console.log("Valid fields", validFields)
-
-    // Check the parse result fields against the valid fields enum
-    fields?.forEach((field) => !(field in validFields) && invalidFields.push(field));
-
-    // console.log("Has productId", hasProductId, "Has duplicate productId", hasDuplicateProductId, "Invalid fields", invalidFields);
-
-    if (hasProductId && !hasDuplicateProductId && invalidFields.length === 0) {
-        isFileValid = true;
-    }
-
-    return {
-        valid: isFileValid,
-        meta: {
-            hasProductId,
-            hasDuplicateProductId,
-            invalidFields,
-        }
-    }
-
-}
-
 export const CsvUpload = () => {
 
-    const [file, setFile] = useState<FileUploadResponse>();
-    const [parseResults, setParseResults] = useState<ParseResults>();
-    const [parseAnalysis, setParseAnalysis] = useState<ParseAnalysis>();
+    const [file, setFile] = useState<CsvUploadResponse>();
+    const [parseResults, setParseResults] = useState<CsvParseResults>();
+    const [parseAnalysis, setParseAnalysis] = useState<CsvParseAnalysis>();
     const [step, setStep] = useState<Step>("upload");
 
     useEffect(() => {
@@ -116,9 +36,23 @@ export const CsvUpload = () => {
             header: true,
             complete: (results, file) => {
                 setParseResults({
-                    data: results.data as {[key: string]: [value: string]}[],
-                    errors: results.errors as {type: string, code: string, message: string, row: number}[],
-                    meta: results.meta as {aborted: boolean, cursor: number, delimiter: string, fields: string[], linebreak: string, truncated: boolean},
+                    data: results.data as {
+                        [key: string]: [value: string]
+                    }[],
+                    errors: results.errors as {
+                        type: string, 
+                        code: string, 
+                        message: string, 
+                        row: number
+                    }[],
+                    meta: results.meta as {
+                        aborted: boolean, 
+                        cursor: number, 
+                        delimiter: string, 
+                        fields: string[], 
+                        linebreak: string, 
+                        truncated: boolean
+                    },
                     file
                 })
             }
@@ -129,10 +63,25 @@ export const CsvUpload = () => {
 
         if (!parseResults) return;
         // console.log("Parse results changed", parseResults)
+
+        // 
         const data = checkParseResults(parseResults!)
         setParseAnalysis(data);
     
     }, [parseResults])
+
+    const { execute, isLoading } = useAction(udfBulkUpdate, {
+        onSuccess: (data) => {
+            console.log("Bulk update success", data)
+        },
+        onError: (error) => {
+            console.error("Bulk update error", error)
+        }
+    })
+
+    const onConfirm = (data: UdfBulkUpdateSchema) => {
+        execute(data)
+    }
 
     return (
         <div className="grid grid-cols-2 gap-4">
@@ -142,7 +91,7 @@ export const CsvUpload = () => {
                         <UploadDropzone
                             endpoint="csvUploader"
                             onClientUploadComplete={(res): void => {
-                                const { name, url, size, type } = res[0] as FileUploadResponse;
+                                const { name, url, size, type } = res[0] as CsvUploadResponse;
                                 console.log("Client upload complete", res);
                                 setFile({ name, url, size, type })
                             }}
@@ -185,11 +134,11 @@ export const CsvUpload = () => {
                     )}
             </div>
             <div className="w-full border rounded-lg p-4 space-y-4">
-                <div className="text-xl">Review</div>
+                <div className="text-xl">Review Changes</div>
                 { parseAnalysis && (
                     <div>
                         <h2>Parse Analysis</h2>
-                        <p>Valid: {parseAnalysis.valid ? "Yes" : "No"}</p>
+                        <p>Valid: {parseAnalysis.isValid ? "Yes" : "No"}</p>
                         <p>Has productId: {parseAnalysis.meta.hasProductId ? "Yes" : "No"}</p>
                         <p>Has duplicate productId: {parseAnalysis.meta.hasDuplicateProductId ? "Yes" : "No"}</p>
                         <p>Invalid fields: {parseAnalysis.meta.invalidFields.length}</p>
@@ -197,7 +146,10 @@ export const CsvUpload = () => {
                 )}
             </div>
             <div className="w-full border rounded-lg p-4 space-y-4">
-                <div className="text-xl">Complete</div>
+                <div className="text-xl">Confirmation</div>
+                <Button>
+                    Confirm
+                </Button>
             </div>
         </div>
     )
