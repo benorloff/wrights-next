@@ -93,79 +93,126 @@ model Udf {
   id                  Int      @id @default(autoincrement())
   brand               String?
   features            String[]
-  featuredImageUrl    String?
-  imageUrls           String[]
-  dimensionLength     Float?
-  dimensionWidth      Float?
-  dimensionHeight     Float?
-  dimensionUnit       String?
-  docCadUrl           String?
-  docCatalogPageUrl   String?
-  docDataSheetUrl     String?
-  docUserManualUrl    String?
-  powerRatingHp       Float?
-  powerRatingHp2      String?
-  powerRatingKw       Float?
-  powerMaxSpeed       Float?
-  powerSpeed2         String?
-  powerVoltage        String?
-  powerPhase          String?
-  powerCurrent        String?
-  powerCurrent2       String?
-  powerDownThrust     String?
-  powerDuty           String?
-  powerEfficiency     String?
-  powerElectricalType String?
-  powerStartingType   String?
-  framePrefix         String?
-  frameSize           String?
-  frameSuffix         String?
-  frameLength         Float?
-  frameLengthMm       Float?
-  frameMaterial       String?
-  frameType           String?
-  enclosureType       String?
+  featuredImageUrl    String?  @map("featured_image_url")
+  imageUrls           String[] @map("image_urls")
+  length              Float?   
+  width               Float?   
+  height              Float?   
+  unit                String?  
+  cadUrl              String?  @map("cad_url")
+  catalogPageUrl      String?  @map("catalog_page_url")
+  dataSheetUrl        String?  @map("data_sheet_url")
+  userManualUrl       String?  @map("user_manual_url")
+  ratingHp            Float?   @map("rating_hp")
+  ratingHp2           String?  @map("rating_hp2")
+  ratingKw            Float?   @map("rating_kw")
+  maxSpeed            Float?   @map("max_speed")
+  speed2              String?  
+  voltage             String?  
+  phase               String?  
+  current             String?  
+  current2            String?  
+  downThrust          String?  @map("down_thrust")
+  duty                String?  
+  efficiency          String?  
+  electricalType      String?  @map("electrical_type")
+  startingType        String?  @map("starting_type")
+  framePrefix         String?  @map("frame_prefix")
+  frameSize           String?  @map("frame_size")
+  frameSuffix         String?  @map("frame_suffix")
+  frameLength         Float?   @map("frame_length")
+  frameLengthMm       Float?   @map("frame_length_mm")
+  frameMaterial       String?  @map("frame_material")
+  frameType           String?  @map("frame_type")
+  enclosureType       String?  @map("enclosure_type")
   rotation            String?
-  mountingType        String?
-  maxAmbient          String?
-  boxMounting         String?
-  baseDiameter        String?
-  shaftDiameter       String?
-  shaftDiameterMm     Float?
-  shaftExtension      String?
-  shaftExtensionMm    Float?
-  shaftType           String?
-  cDimMm              Float?
-  cDimIn              Float?
-  connectionDrawingNo String?
-  deBearingSize       String?
-  deBearingType       String?
+  mountingType        String?  @map("mounting_type")
+  maxAmbient          String?  @map("max_ambient")
+  boxMounting         String?  @map("box_mounting")
+  baseDiameter        String?  @map("base_diameter")
+  shaftDiameter       String?  @map("shaft_diameter")
+  shaftDiameterMm     Float?   @map("shaft_diameter_mm")
+  shaftExtension      String?  @map("shaft_extension")
+  shaftExtensionMm    Float?   @map("shaft_extension_mm")
+  shaftType           String?  @map("shaft_type")
+  cDimMm              Float?   @map("c_dim_mm")
+  cDimIn              Float?   @map("c_dim_in")
+  connectionDrawingNo String?  @map("connection_drawing_no")
+  deBearingSize       String?  @map("de_bearing_size")
+  deBearingType       String?  @map("de_bearing_type")
   frequency           String?
-  hazardousLocation   String?
-  insulationClass     String?
-  ipCode              String?
-  kvaCode             String?
-  motorOrientation    String?
-  nemaDesign          String?
-  numPoles            String?
-  numSpeeds           String?
-  odeBearingSize      String?
-  odeBearingType      String?
-  outlineDrawingNo    String?
-  powerFactor         String?
-  resistanceMain      String?
-  serviceFactor       Float?
-  thruBoltsExt        String?
+  hazardousLocation   String?  @map("hazardous_location")
+  insulationClass     String?  @map("insulation_class")
+  ipCode              String?  @map("ip_code")
+  kvaCode             String?  @map("kva_code")
+  motorOrientation    String?  @map("motor_orientation")
+  nemaDesign          String?  @map("nema_design")
+  numPoles            String?  @map("num_poles")
+  numSpeeds           String?  @map("num_speeds")
+  odeBearingSize      String?  @map("ode_bearing_size")
+  odeBearingType      String?  @map("ode_bearing_type")
+  outlineDrawingNo    String?  @map("outline_drawing_no")
+  powerFactor         String?  @map("power_factor")
+  resistanceMain      String?  @map("resistance_main")
+  serviceFactor       Float?   @map("service_factor")
+  thruBoltsExt        String?  @map("thru_bolts_ext")
   overload            String?
-  certCe              Boolean?
-  certCsa             Boolean?
-  certUl              Boolean?
+  certCe              Boolean? @map("cert_ce")
+  certCsa             Boolean? @map("cert_csa")
+  certUl              Boolean? @map("cert_ul")
 
   product   Inventory @relation(fields: [productId], references: [id])
-  productId Int       @unique
+  productId Int       @unique @map("product_id")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("udf")
+}
+
+model File {
+  id   Int    @id @default(autoincrement())
+  name String
+  url  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("file")
+}
+
+model Image {
+  id   Int    @id @default(autoincrement())
+  name String
+  url  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("image")
+}
+
+enum Action {
+  CREATE
+  UPDATE
+  DELETE
+}
+
+enum EntityType {
+  INVENTORY
+  UDF
+  FILE
+  IMAGE
+}
+
+model AuditLog {
+  id         Int        @id @default(autoincrement())
+  action     Action
+  entityId   Int
+  entityType EntityType
+  userId     String?
+
+  createdAt DateTime @default(now())
+
+  @@map("audit_log")
 }

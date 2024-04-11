@@ -96,102 +96,103 @@ import { useRouter } from "next/navigation";
 const unitEnum = z.enum(['in', 'cm', 'mm']);
 const phaseEnum = z.enum(['1', '2', '3']);
 
-export const InventoryItemSchema = z.object({
-    brand: z.string().max(34, { message: 'Part Number must be 34 characters or less'}).optional(),
+export const UdfFormSchema = z.object({
+    product_id: z.number(),
+    brand: z.string().max(34, { message: 'Brand must be 34 characters or less'}).optional(),
     // TODO: Create db table to store features
     // Get all features from db on render and pass to field validation as enum
     // Render as "tag cloud" with chips and option to add new feature(s)
-    features: z.string().array().optional(),
+    features: z.coerce.string().array().optional(),
     // Zod .partial method makes all properties optional
     // https://zod.dev/?id=partial
-    images: z.object({
-        featured: z.string().url(),
-        image1: z.string().url(),
-        image2: z.string().url(),
-        image3: z.string().url(),
-        image4: z.string().url(),
-        image5: z.string().url(),
-    }).partial(),
+    // images: z.object({
+    //     featured: z.string().url().optional(),
+    //     image1: z.string().url().optional(),
+    //     image2: z.string().url().optional(),
+    //     image3: z.string().url().optional(),
+    //     image4: z.string().url().optional(),
+    //     image5: z.string().url().optional(),
+    // }).partial(),
     dimensions: z.object({
         length: z.coerce.number(),
         width: z.coerce.number(),
         height: z.coerce.number(),
-        unit: unitEnum,
+        unit: z.enum(['in', 'cm', 'mm']),
     }).partial(),
-    docs: z.object({
-        cadUrl: z.string().url(),
-        catalogPageUrl: z.string().url(),
-        dataSheetUrl: z.string().url(),
-        userManualUrl: z.string().url(),
-    }).partial(),
-    specs: z.object({
-        power: z.object({
-            ratingHp: z.number(),
-            ratingHp2: z.string(),
-            ratingKw: z.number(),
-            maxSpeed: z.number(),
-            speed2: z.string(),
-            voltage: z.string(),
-            phase: phaseEnum,
-            current: z.string(),
-            current2: z.string(),
-            downThrust: z.string(),
-            duty: z.string(),
-            efficiency: z.string(),
-            electricalType: z.string(),
-            startingType: z.string(),
-        }).partial(),
-        frame: z.object({
-            prefix: z.string(),
-            size: z.string(),
-            suffix: z.string(),
-            length: z.number(),
-            lengthMm: z.number(),
-            material: z.string(),
-            type: z.string(),
-        }).partial(),
-        enclosureType: z.string(),
-        // Question: Can rotation be enum?
-        rotation: z.string(),
-        mountingType: z.string(),
-        maxAmbient: z.string(),
-        boxMounting: z.string(),
-        baseDiameter: z.string(),
-        shaft: z.object({
-            diameter: z.string(),
-            diameterMm: z.number(),
-            extension: z.string(),
-            extensionMm: z.number(),
-            type: z.string(),
-        }).partial(),
-        cDimMm: z.number(),
-        cDimIn: z.number(),
-        connectionDrawingNo: z.string(),
-        deBearingSize: z.string(),
-        deBearingType: z.string(),
-        frequency: z.string(),
-        hazardousLocation: z.string(),
-        insulationClass: z.string(),
-        ipCode: z.string(),
-        kvaCode: z.string(),
-        motorOrientation: z.string(),
-        nemaDesign: z.string(),
-        numPoles: z.string(),
-        numSpeeds: z.string(),
-        odeBearingSize: z.string(),
-        odeBearingType: z.string(),
-        outlineDrawingNo: z.string(),
-        powerFactor: z.string(),
-        resistanceMain: z.string(),
-        serviceFactor: z.number(),
-        thruBoltsExt: z.string(),
-        overload: z.string(),
-    }).partial(),
-    certs: z.object({
-        ce: z.boolean(),
-        csa: z.boolean(),
-        ul: z.boolean(),
-    }).partial(),
+    // docs: z.object({
+    //     cadUrl: z.string().url(),
+    //     catalogPageUrl: z.string().url(),
+    //     dataSheetUrl: z.string().url(),
+    //     userManualUrl: z.string().url(),
+    // }).partial(),
+    // specs: z.object({
+    //     power: z.object({
+    //         ratingHp: z.coerce.number(),
+    //         ratingHp2: z.string(),
+    //         ratingKw: z.coerce.number(),
+    //         maxSpeed: z.coerce.number(),
+    //         speed2: z.string(),
+    //         voltage: z.string(),
+    //         phase: phaseEnum,
+    //         current: z.string(),
+    //         current2: z.string(),
+    //         downThrust: z.string(),
+    //         duty: z.string(),
+    //         efficiency: z.string(),
+    //         electricalType: z.string(),
+    //         startingType: z.string(),
+    //     }).partial(),
+    //     frame: z.object({
+    //         prefix: z.string(),
+    //         size: z.string(),
+    //         suffix: z.string(),
+    //         length: z.coerce.number(),
+    //         lengthMm: z.coerce.number(),
+    //         material: z.string(),
+    //         type: z.string(),
+    //     }).partial(),
+    //     enclosureType: z.string(),
+    //     // Question: Can rotation be enum?
+    //     rotation: z.string(),
+    //     mountingType: z.string(),
+    //     maxAmbient: z.string(),
+    //     boxMounting: z.string(),
+    //     baseDiameter: z.string(),
+    //     shaft: z.object({
+    //         diameter: z.string(),
+    //         diameterMm: z.coerce.number(),
+    //         extension: z.string(),
+    //         extensionMm: z.coerce.number(),
+    //         type: z.string(),
+    //     }).partial(),
+    //     cDimMm: z.coerce.number(),
+    //     cDimIn: z.coerce.number(),
+    //     connectionDrawingNo: z.string(),
+    //     deBearingSize: z.string(),
+    //     deBearingType: z.string(),
+    //     frequency: z.string(),
+    //     hazardousLocation: z.string(),
+    //     insulationClass: z.string(),
+    //     ipCode: z.string(),
+    //     kvaCode: z.string(),
+    //     motorOrientation: z.string(),
+    //     nemaDesign: z.string(),
+    //     numPoles: z.string(),
+    //     numSpeeds: z.string(),
+    //     odeBearingSize: z.string(),
+    //     odeBearingType: z.string(),
+    //     outlineDrawingNo: z.string(),
+    //     powerFactor: z.string(),
+    //     resistanceMain: z.string(),
+    //     serviceFactor: z.number(),
+    //     thruBoltsExt: z.string(),
+    //     overload: z.string(),
+    // }).partial(),
+    // certs: z.object({
+    //     ce: z.boolean(),
+    //     csa: z.boolean(),
+    //     ul: z.boolean(),
+    // }).partial(),
 });
 
 export const InventoryItemForm = ({
@@ -204,8 +205,14 @@ export const InventoryItemForm = ({
 
     const router = useRouter();
 
-    const form = useForm<z.infer<typeof InventoryItemSchema>>({
-        resolver: zodResolver(InventoryItemSchema),
+    const form = useForm<z.infer<typeof UdfFormSchema>>({
+        resolver: zodResolver(UdfFormSchema),
+        defaultValues: {
+            product_id: item?.id,
+            brand: "",
+            features: [],
+            dimensions: { length: 0, width: 0, height: 0, unit: "in" },
+        }
     });
 
     const { execute, isLoading } = useAction(updateInventoryItem, {
@@ -218,10 +225,10 @@ export const InventoryItemForm = ({
         }
     })
 
-    const onSubmit = (values: z.infer<typeof InventoryItemSchema>) => {
+    const onSubmit = (values: z.infer<typeof UdfFormSchema>) => {
         console.log("submit button clicked")
         // const { id, ...rest } = values;
-        execute(values);
+        execute({...values});
     };
 
     return (
@@ -311,7 +318,7 @@ export const InventoryItemForm = ({
                                 </div>
                             </CardContent>
                         </Card>
-                        <Card>
+                        {/* <Card>
                             <CardHeader>
                                 <CardTitle>Stock</CardTitle>
                                 <CardDescription>
@@ -446,56 +453,56 @@ export const InventoryItemForm = ({
                                 Add Variant
                                 </Button>
                             </CardFooter>
-                        </Card>
-                        <Card x-chunk="dashboard-07-chunk-2">
+                        </Card> */}
+                        {/* <Card x-chunk="dashboard-07-chunk-2">
                         <CardHeader>
                             <CardTitle>Product Category</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="grid gap-6 sm:grid-cols-3">
-                            <div className="grid gap-3">
-                                <Label htmlFor="category">Category</Label>
-                                <Select>
-                                <SelectTrigger
-                                    id="category"
-                                    aria-label="Select category"
-                                >
-                                    <SelectValue placeholder="Select category" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="clothing">Clothing</SelectItem>
-                                    <SelectItem value="electronics">
-                                    Electronics
-                                    </SelectItem>
-                                    <SelectItem value="accessories">
-                                    Accessories
-                                    </SelectItem>
-                                </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="grid gap-3">
-                                <Label htmlFor="subcategory">
-                                Subcategory (optional)
-                                </Label>
-                                <Select>
-                                <SelectTrigger
-                                    id="subcategory"
-                                    aria-label="Select subcategory"
-                                >
-                                    <SelectValue placeholder="Select subcategory" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="t-shirts">T-Shirts</SelectItem>
-                                    <SelectItem value="hoodies">Hoodies</SelectItem>
-                                    <SelectItem value="sweatshirts">
-                                    Sweatshirts
-                                    </SelectItem>
-                                </SelectContent>
-                                </Select>
-                            </div>
+                                <div className="grid gap-3">
+                                    <Label htmlFor="category">Category</Label>
+                                    <Select>
+                                    <SelectTrigger
+                                        id="category"
+                                        aria-label="Select category"
+                                    >
+                                        <SelectValue placeholder="Select category" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="clothing">Clothing</SelectItem>
+                                        <SelectItem value="electronics">
+                                        Electronics
+                                        </SelectItem>
+                                        <SelectItem value="accessories">
+                                        Accessories
+                                        </SelectItem>
+                                    </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="grid gap-3">
+                                    <Label htmlFor="subcategory">
+                                    Subcategory (optional)
+                                    </Label>
+                                    <Select>
+                                    <SelectTrigger
+                                        id="subcategory"
+                                        aria-label="Select subcategory"
+                                    >
+                                        <SelectValue placeholder="Select subcategory" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="t-shirts">T-Shirts</SelectItem>
+                                        <SelectItem value="hoodies">Hoodies</SelectItem>
+                                        <SelectItem value="sweatshirts">
+                                        Sweatshirts
+                                        </SelectItem>
+                                    </SelectContent>
+                                    </Select>
+                                </div>
                             </div>
                         </CardContent>
-                        </Card>
+                        </Card> */}
                     </div>
                     <div className="grid auto-rows-max items-start gap-4 lg:gap-8">
                         <Card>
@@ -571,7 +578,7 @@ export const InventoryItemForm = ({
                                 />
                             </CardContent>
                         </Card>
-                        <Card>
+                        {/* <Card>
                         <CardHeader>
                             <CardTitle>Product Status</CardTitle>
                         </CardHeader>
@@ -592,8 +599,8 @@ export const InventoryItemForm = ({
                             </div>
                             </div>
                         </CardContent>
-                        </Card>
-                        <Card
+                        </Card> */}
+                        {/* <Card
                         className="overflow-hidden" x-chunk="dashboard-07-chunk-4"
                         >
                         <CardHeader>
@@ -646,7 +653,7 @@ export const InventoryItemForm = ({
                             </div>
                             </div>
                         </CardContent>
-                        </Card>
+                        </Card> */}
                     </div>
                     </div>
                     <div className="flex items-center justify-center gap-2 md:hidden">

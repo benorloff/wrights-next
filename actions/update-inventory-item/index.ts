@@ -7,29 +7,40 @@ import { UpdateInventoryItemSchema } from "./schema";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
 
-    let item;
+    let udf;
 
     try {
-        item = await db.udf.upsert({
+        console.log(data, "<-- data from updateInventoryItem server action")
+
+        udf = await db.udf.upsert({
             where: {
-                // Use the product ID to find the UDF record
-                productId: data.id,
+                productId: data.product_id,
             },
-            // If the UDF record exists, update it
             update: {
-                ...data,
+                brand: data.brand,
+                features: data.features,
+                length: data.dimensions?.length,
+                width: data.dimensions?.width,
+                height: data.dimensions?.height,
+                unit: data.dimensions?.unit,
             },
-            // If the UDF record does NOT exist, create it
             create: {
-                productId: data.id,
-                ...data,
+                productId: data.product_id,
+                brand: data.brand,
+                features: data.features,
+                length: data.dimensions?.length,
+                width: data.dimensions?.width,
+                height: data.dimensions?.height,
+                unit: data.dimensions?.unit,
             }
         })
     } catch (error) {
         throw new Error(`Error updating inventory item: ${error}`);
     }
 
-    return { data: item };
+    // TODO: Add audit log
+
+    return { data: udf };
 };
 
 export const updateInventoryItem = createSafeAction(UpdateInventoryItemSchema, handler);
