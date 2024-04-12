@@ -7,6 +7,8 @@ import { UpdateInventoryItemSchema } from "./schema";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
 
+    const { productId, ...rest } = data;
+
     let udf;
 
     try {
@@ -14,24 +16,15 @@ const handler = async (data: InputType): Promise<ReturnType> => {
 
         udf = await db.udf.upsert({
             where: {
-                productId: data.product_id,
+                productId,
             },
             update: {
-                brand: data.brand,
-                features: data.features,
-                length: data.dimensions?.length,
-                width: data.dimensions?.width,
-                height: data.dimensions?.height,
-                unit: data.dimensions?.unit,
+                productId,
+                ...rest,
             },
             create: {
-                productId: data.product_id,
-                brand: data.brand,
-                features: data.features,
-                length: data.dimensions?.length,
-                width: data.dimensions?.width,
-                height: data.dimensions?.height,
-                unit: data.dimensions?.unit,
+                productId: productId as number,
+                ...rest,
             }
         })
     } catch (error) {
