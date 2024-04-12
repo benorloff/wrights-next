@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 
 import { ActionState, FieldErrors } from "@/utils/create-safe-action";
+import { Prisma } from "@prisma/client";
 
 type Action<TInput, TOutput> = (data: TInput) => Promise<ActionState<TInput, TOutput>>;
 

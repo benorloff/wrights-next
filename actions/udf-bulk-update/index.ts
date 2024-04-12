@@ -1,15 +1,14 @@
 "use server"
 
 import { db } from "@/lib/db";
-import { InputType, ReturnType } from "./types"
+import { InputType, Results, ReturnType } from "./types"
 import { createSafeAction } from "@/utils/create-safe-action";
 import { Prisma, Udf } from "@prisma/client";
 import { UdfBulkUpdateSchema } from "./schema";
 
-const handler = async (approvedData: InputType): Promise<ReturnType> => {
+const handler = async (data: InputType): Promise<ReturnType> => {
 
-    let count: number = 0;
-    let errors: { id: number, error: any }[] = [];
+    console.log("udf bulk update handler hit: approvedData -->", data.length)
 
     const createUdf = (data: any) => {
         return Prisma.validator<Prisma.UdfUncheckedCreateInput>()({
@@ -27,24 +26,39 @@ const handler = async (approvedData: InputType): Promise<ReturnType> => {
         return Prisma.validator<Prisma.UdfWhereUniqueInput>()({
             productId: id,
         })
-    }
+    };
 
-    approvedData.forEach(async (row: Prisma.UdfUncheckedCreateInput) => {
-        let udf: Udf;
-        try {
-            udf = await db.udf.upsert({
+    const promises: Promise<Udf>[] = [];
+
+
+    data.forEach((row) => {
+        promises.push(
+            db.udf.upsert({
                 where: findSpecificUdf(row.productId),
-                update: updateUdf(row),
                 create: createUdf(row),
+                update: updateUdf(row),
             })
-            count++;
-        } catch (error) {
-            errors.push({ id: row.productId, error })
-            console.error(error)
-        }
+        )
+    })
+    
+    const productIds = await Promise.all(promises).then((results) => {
+        let productIds: number[] = []
+        results.forEach((result) => {
+            productIds.push(result.productId)
+        })
+        return productIds;
+    })
+    .then((productIds) => {
+        console.log("productIds -->", productIds)
+        return { data: { productIds }};
+    })
+    .catch((error) => {
+        console.log("error -->", error)
+        return {error: 'Bulk update failed'}
     })
 
-    return { data: { count, errors } }
+    return productIds;
+
 };
 
 export const udfBulkUpdate = createSafeAction(UdfBulkUpdateSchema, handler);

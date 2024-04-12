@@ -3,7 +3,9 @@ import { Prisma } from "@prisma/client"
 export interface CsvParseResults {
     data: {
         productId: number,
-        [key: string]: string | number | boolean | null
+        features: string[],
+        imageUrls: string[],
+        [key: string]: string | string[] | number | boolean | null
     }[],
     errors: {
         type: string, 
@@ -32,7 +34,7 @@ export interface CsvUploadResponse {
 export interface CsvParseAnalysis {
     isValid: boolean,
     meta: {
-        hasProductId: boolean,
+        hasProductIdField: boolean,
         hasDuplicateProductId: boolean,
         invalidFields: string[]
     }
@@ -41,7 +43,9 @@ export interface CsvParseAnalysis {
 export interface CsvApprovedData {
     data: {
         productId: number,
-        [key: string]: string | number | boolean | null
+        features: string[],
+        imageUrls: string[],
+        [key: string]: string | string[] | number | boolean | null
     }[],
 
 }
@@ -55,20 +59,26 @@ export const formatFileSize = (bytes: number, decimals: number): string => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
 }
 
+export const splitStringToArray = (str: string, delimiter: string): string[] => {
+    return str.split(delimiter).map((item) => item.trim());
+}
+
 export const checkParseResults = (parseResults: CsvParseResults) => {
+
+    console.log("Checking parse results: ", parseResults, "<-- parseResults")
     
     let isFileValid: boolean = false;
-    let hasProductId: boolean = false;
+    let hasProductIdField: boolean = false;
     let hasDuplicateProductId: boolean = false;
     let invalidFields: string[] = [];
     
     const fields = parseResults?.meta.fields;
     
     // Check if the CSV has the required "productId" field
-    hasProductId = fields?.includes("productId");
+    hasProductIdField = fields?.includes("productId");
 
     // Check if there are duplicate productIds
-    if (hasProductId) {
+    if (hasProductIdField) {
         const productIds = new Set();
 
         parseResults?.data.forEach((row) => {
@@ -84,14 +94,14 @@ export const checkParseResults = (parseResults: CsvParseResults) => {
     // Check the parse result fields against the valid fields enum
     fields?.forEach((field) => !(field in validFields) && invalidFields.push(field));
 
-    if (hasProductId && !hasDuplicateProductId && invalidFields.length === 0) {
+    if (hasProductIdField && !hasDuplicateProductId && invalidFields.length === 0) {
         isFileValid = true;
     }
 
     return {
         isValid: isFileValid,
         meta: {
-            hasProductId,
+            hasProductIdField,
             hasDuplicateProductId,
             invalidFields,
         }
