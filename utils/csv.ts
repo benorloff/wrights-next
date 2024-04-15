@@ -2,7 +2,8 @@ import { Prisma } from "@prisma/client"
 
 export interface CsvParseResults {
     data: {
-        productId: number,
+        whse: string,
+        partNo: string,
         features: string[],
         imageUrls: string[],
         [key: string]: string | string[] | number | boolean | null
@@ -34,15 +35,16 @@ export interface CsvUploadResponse {
 export interface CsvParseAnalysis {
     isValid: boolean,
     meta: {
-        hasProductIdField: boolean,
-        hasDuplicateProductId: boolean,
+        hasWhseField: boolean,
+        hasPartNoField: boolean,
         invalidFields: string[]
     }
 }
 
 export interface CsvApprovedData {
     data: {
-        productId: number,
+        whse: string,
+        partNo: string,
         features: string[],
         imageUrls: string[],
         [key: string]: string | string[] | number | boolean | null
@@ -68,41 +70,36 @@ export const checkParseResults = (parseResults: CsvParseResults) => {
     console.log("Checking parse results: ", parseResults, "<-- parseResults")
     
     let isFileValid: boolean = false;
-    let hasProductIdField: boolean = false;
+    let hasWhseField: boolean = false;
+    let hasPartNoField: boolean = false;
     let hasDuplicateProductId: boolean = false;
     let invalidFields: string[] = [];
     
     const fields = parseResults?.meta.fields;
     
     // Check if the CSV has the required "productId" field
-    hasProductIdField = fields?.includes("productId");
-
-    // Check if there are duplicate productIds
-    if (hasProductIdField) {
-        const productIds = new Set();
-
-        parseResults?.data.forEach((row) => {
-            productIds.add(row.productId)
-        })
-
-        hasDuplicateProductId = productIds.size !== parseResults?.data.length;
-    }
+    hasPartNoField = fields?.includes("partNo");
+    hasWhseField = fields?.includes("whse");
     
     // Prisma generated type enum for UDF model
-    const validFields = Prisma.UdfScalarFieldEnum;
+    const udfFields = Prisma.UdfScalarFieldEnum;
+    // Whse and partNo are required to establish the relationship in the database
+    const whsePartNo = { whse: "whse", partNo: "partNo" };
+    const validFields = { ...whsePartNo, ...udfFields };
 
     // Check the parse result fields against the valid fields enum
-    fields?.forEach((field) => !(field in validFields) && invalidFields.push(field));
+    fields?.forEach((field) => 
+        !(field in validFields) && invalidFields.push(field));
 
-    if (hasProductIdField && !hasDuplicateProductId && invalidFields.length === 0) {
+    if (hasPartNoField && hasWhseField && invalidFields.length === 0) {
         isFileValid = true;
     }
 
     return {
         isValid: isFileValid,
         meta: {
-            hasProductIdField,
-            hasDuplicateProductId,
+            hasPartNoField,
+            hasWhseField,
             invalidFields,
         }
     }

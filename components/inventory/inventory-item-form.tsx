@@ -10,7 +10,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Inventory, Prisma } from "@prisma/client";
-import { db, warehouses } from "@/lib/db";
+import { InventoryWithInclude, db, warehouses } from "@/lib/db";
 import {
   ChevronLeft,
   Home,
@@ -92,12 +92,17 @@ import { useAction } from "@/hooks/use-action";
 import { updateInventoryItem } from "@/actions/update-inventory-item";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { UdfFields, UdfUpdateSchema } from "@/actions/udf-bulk-update/schema";
+import { Checkbox } from "../ui/checkbox";
 
 const unitEnum = z.enum(['in', 'cm', 'mm']);
 const phaseEnum = z.enum(['1', '2', '3']);
 
 export const UdfFormSchema = z.object({
-    product_id: z.number(),
+    id: z.number(),
+    whse: z.string(),
+    partNo: z.string(),
+    description: z.string(),
     brand: z.string().max(34, { message: 'Brand must be 34 characters or less'}).optional(),
     // TODO: Create db table to store features
     // Get all features from db on render and pass to field validation as enum
@@ -117,7 +122,7 @@ export const UdfFormSchema = z.object({
         length: z.coerce.number(),
         width: z.coerce.number(),
         height: z.coerce.number(),
-        unit: z.enum(['in', 'cm', 'mm']),
+        unit: z.coerce.string(),
     }).partial(),
     // docs: z.object({
     //     cadUrl: z.string().url(),
@@ -201,18 +206,85 @@ export const InventoryItemForm = ({
     item: any;
 }) => {
 
+    const { udf } = item;
+
     const [isEditing, setIsEditing] = useState<boolean>(false);
 
     const router = useRouter();
 
-    const form = useForm<z.infer<typeof UdfFormSchema>>({
-        resolver: zodResolver(UdfFormSchema),
+    const form = useForm<z.infer<typeof UdfFields>>({
+        resolver: zodResolver(UdfFields),
         defaultValues: {
-            product_id: item?.id,
-            brand: "",
-            features: [],
-            dimensions: { length: 0, width: 0, height: 0, unit: "in" },
-        }
+            brand: item.udf?.brand || "",
+            features: item.udf?.features || [],
+            length: item.udf?.length || 0, 
+            width: item.udf?.width || 0, 
+            height: item.udf?.height || 0, 
+            unit: item.udf?.unit || "in",
+            featuredImageUrl: item.udf?.featuredImageUrl || "",
+            imageUrls: item.udf?.imageUrls || [],
+            cadUrl: item.udf?.cadUrl || "",
+            catalogPageUrl: item.udf?.catalogPageUrl || "",
+            dataSheetUrl: item.udf?.dataSheetUrl || "",
+            userManualUrl: item.udf?.userManualUrl || "",
+            ratingHp: item.udf?.ratingHp || 0,
+            ratingHp2: item.udf?.ratingHp2 || "",
+            ratingKw: item.udf?.ratingKw || 0,
+            maxSpeed: item.udf?.maxSpeed || 0,
+            speed2: item.udf?.speed2 || "",
+            voltage: item.udf?.voltage || "",
+            phase: item.udf?.phase || "",
+            current: item.udf?.current || "",
+            current2: item.udf?.current2 || "",
+            downThrust: item.udf?.downThrust || "", 
+            duty: item.udf?.duty || "", 
+            efficiency: item.udf?.efficiency || "",
+            electricalType: item.udf?.electricalType || "",
+            startingType: item.udf?.startingType || "",
+            framePrefix: item.udf?.framePrefix || "",
+            frameSize: item.udf?.frameSize || "",
+            frameSuffix: item.udf?.frameSuffix || "",
+            frameLength: item.udf?.frameLength || 0,
+            frameLengthMm: item.udf?.frameLengthMm || 0,
+            frameMaterial: item.udf?.frameMaterial || "",
+            frameType: item.udf?.frameType || "",
+            enclosureType: item.udf?.enclosureType || "",
+            rotation: item.udf?.rotation || "",
+            mountingType: item.udf?.mountingType || "",
+            maxAmbient: item.udf?.maxAmbient || "",
+            boxMounting: item.udf?.boxMounting || "",
+            baseDiameter: item.udf?.baseDiameter || "",
+            shaftDiameter: item.udf?.shaftDiameter || "",
+            shaftDiameterMm: item.udf?.shaftDiameterMm || 0,
+            shaftExtension: item.udf?.shaftExtension || "",
+            shaftExtensionMm: item.udf?.shaftExtensionMm || 0,
+            shaftType: item.udf?.shaftType || "",
+            cDimMm: item.udf?.cDimMm || 0,
+            cDimIn: item.udf?.cDimIn || 0,
+            connectionDrawingNo: item.udf?.connectionDrawingNo || "",
+            deBearingSize: item.udf?.deBearingSize || "",
+            deBearingType: item.udf?.deBearingType || "",
+            frequency: item.udf?.frequency || "",
+            hazardousLocation: item.udf?.hazardousLocation || "",
+            insulationClass: item.udf?.insulationClass || "",
+            ipCode: item.udf?.ipCode || "",
+            kvaCode: item.udf?.kvaCode || "",
+            motorOrientation: item.udf?.motorOrientation || "",
+            nemaDesign: item.udf?.nemaDesign || "",
+            numPoles: item.udf?.numPoles || "",
+            numSpeeds: item.udf?.numSpeeds || "",
+            odeBearingSize: item.udf?.odeBearingSize || "",
+            odeBearingType: item.udf?.odeBearingType || "",
+            outlineDrawingNo: item.udf?.outlineDrawingNo || "",
+            powerFactor: item.udf?.powerFactor || "",
+            resistanceMain: item.udf?.resistanceMain || "",
+            serviceFactor: item.udf?.serviceFactor || 0,
+            thruBoltsExt: item.udf?.thruBoltsExt || "",
+            overload: item.udf?.overload || "",
+            certCe: item.udf?.certCe || false,
+            certCsa: item.udf?.certCsa || false,
+            certUl: item.udf?.certUl || false,
+        },
     });
 
     const { execute, isLoading } = useAction(updateInventoryItem, {
@@ -225,7 +297,7 @@ export const InventoryItemForm = ({
         }
     })
 
-    const onSubmit = (values: z.infer<typeof UdfFormSchema>) => {
+    const onSubmit = (values: z.infer<typeof UdfFields>) => {
         console.log("submit button clicked")
         // const { id, ...rest } = values;
         execute({...values});
@@ -264,7 +336,7 @@ export const InventoryItemForm = ({
                                 Lipsum dolor sit amet, consectetur adipiscing elit
                                 </CardDescription>
                             </CardHeader>
-                            <CardContent className="grid grid-cols-2 gap-6">
+                            <CardContent className="grid grid-cols-3 gap-6">
                                 <div className="space-y-2">
                                     <FormLabel>Part #</FormLabel>
                                     <Input disabled placeholder={item?.partNo} />
@@ -275,7 +347,7 @@ export const InventoryItemForm = ({
                                 </div>
                                 <div className="space-y-2">
                                     <FormLabel>Description</FormLabel>
-                                    <Input disabled placeholder={item?.description} />
+                                    <Input disabled placeholder={item?.description!} />
                                 </div>
                                 <FormField
                                     control={form.control}
@@ -284,7 +356,7 @@ export const InventoryItemForm = ({
                                         <FormItem>
                                             <FormLabel>Brand</FormLabel>
                                             <FormControl>
-                                                <Input disabled {...field} />
+                                                <Input {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -305,7 +377,7 @@ export const InventoryItemForm = ({
                                         )}
                                     />
                                 </div>
-                                <div className="col-span-2">
+                                <div className="col-span-3">
                                     <div className="space-y-2">
                                         <FormLabel>Extended Description</FormLabel>
                                         <FormControl>
@@ -316,6 +388,198 @@ export const InventoryItemForm = ({
                                         </FormControl>
                                     </div>
                                 </div>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Power</CardTitle>
+                                <CardDescription>
+                                    Lipsum dolor sit amet, consectetur adipiscing elit
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="grid grid-cols-3 gap-6">
+                                <FormField
+                                    control={form.control}
+                                    name="ratingHp"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Rating HP</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="ratingHp2"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Rating HP2</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="ratingKw"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Rating KW</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="maxSpeed"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Max Speed</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="speed2"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Speed 2</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="voltage"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Voltage</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="phase"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Phase</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="current"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Current</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="current2"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Current 2</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="downThrust"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Down Thrust</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="duty"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Duty</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="efficiency"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Efficiency</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="electricalType"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Electrical Type</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="startingType"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Starting Type</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                             </CardContent>
                         </Card>
                         {/* <Card>
@@ -515,12 +779,12 @@ export const InventoryItemForm = ({
                             <CardContent className="grid grid-cols-2 gap-6">
                                 <FormField
                                     control={form.control}
-                                    name="dimensions.length"
+                                    name="length"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Length</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="0.00" {...field} />
+                                                <Input type="number" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -528,12 +792,12 @@ export const InventoryItemForm = ({
                                 />
                                 <FormField
                                     control={form.control}
-                                    name="dimensions.width"
+                                    name="width"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Width</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="0.00" {...field} />
+                                                <Input type="number" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -541,12 +805,12 @@ export const InventoryItemForm = ({
                                 />
                                 <FormField
                                     control={form.control}
-                                    name="dimensions.height"
+                                    name="height"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Height</FormLabel>
                                             <FormControl>
-                                                <Input placeholder="0.00" {...field} />
+                                                <Input type="number" {...field} />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -554,19 +818,22 @@ export const InventoryItemForm = ({
                                 />
                                 <FormField
                                     control={form.control}
-                                    name="dimensions.unit"
+                                    name="unit"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Unit</FormLabel>
-                                            <Select onValueChange={field.onChange}>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                 <FormControl>
                                                     <SelectTrigger>
                                                         <SelectValue placeholder="Select unit" />
                                                     </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
-                                                    {unitEnum._def.values.map((unit) => (
-                                                        <SelectItem key={unit} value={unit}>
+                                                    {["in","cm","mm"].map((unit) => (
+                                                        <SelectItem 
+                                                            key={unit} 
+                                                            value={unit}
+                                                        >
                                                             {unit}
                                                         </SelectItem>
                                                     ))}
@@ -578,31 +845,9 @@ export const InventoryItemForm = ({
                                 />
                             </CardContent>
                         </Card>
-                        {/* <Card>
-                        <CardHeader>
-                            <CardTitle>Product Status</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid gap-6">
-                            <div className="grid gap-3">
-                                <Label htmlFor="status">Status</Label>
-                                <Select>
-                                <SelectTrigger id="status" aria-label="Select status">
-                                    <SelectValue placeholder="Select status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="draft">Draft</SelectItem>
-                                    <SelectItem value="published">Active</SelectItem>
-                                    <SelectItem value="archived">Archived</SelectItem>
-                                </SelectContent>
-                                </Select>
-                            </div>
-                            </div>
-                        </CardContent>
-                        </Card> */}
-                        {/* <Card
-                        className="overflow-hidden" x-chunk="dashboard-07-chunk-4"
-                        >
+                    <Card
+                    className="overflow-hidden"
+                    >
                         <CardHeader>
                             <CardTitle>Product Images</CardTitle>
                             <CardDescription>
@@ -653,7 +898,147 @@ export const InventoryItemForm = ({
                             </div>
                             </div>
                         </CardContent>
-                        </Card> */}
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Documents</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid gap-6">
+                                <div className="grid gap-3">
+                                    <FormField
+                                        control={form.control}
+                                        name="cadUrl"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>CAD URL</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                                <div className="grid gap-3">
+                                    <FormField
+                                        control={form.control}
+                                        name="catalogPageUrl"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Catalog Page URL</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                                <div className="grid gap-3">
+                                    <FormField
+                                        control={form.control}
+                                        name="dataSheetUrl"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Data Sheet URL</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                                <div className="grid gap-3">
+                                    <FormField
+                                        control={form.control}
+                                        name="userManualUrl"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>User Manual URL</FormLabel>
+                                                <FormControl>
+                                                    <Input {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Certifications</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="grid gap-6">
+                                <div className="grid gap-3">
+                                    <FormField
+                                        control={form.control}
+                                        name="certCe"
+                                        render={({ field }) => (
+                                            <FormItem
+                                                className="flex flex-row items-start space-x-3 space-y-0"
+                                            >
+                                                <FormControl>
+                                                    <Checkbox 
+                                                        checked={field.value}
+                                                        onCheckedChange={field.onChange}
+                                                    />
+                                                </FormControl>
+                                                <div className="space-y-1 leading-none">
+                                                    <FormLabel>CE</FormLabel>
+                                                    <FormMessage />
+                                                </div>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="certCsa"
+                                        render={({ field }) => (
+                                            <FormItem
+                                                className="flex flex-row items-start space-x-3 space-y-0"
+                                            >
+                                                <FormControl>
+                                                    <Checkbox 
+                                                        checked={field.value}
+                                                        onCheckedChange={field.onChange}
+                                                    />
+                                                </FormControl>
+                                                <div className="space-y-1 leading-none">
+                                                    <FormLabel>CSA</FormLabel>
+                                                    <FormMessage />
+                                                </div>
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="certUl"
+                                        render={({ field }) => (
+                                            <FormItem
+                                                className="flex flex-row items-start space-x-3 space-y-0"
+                                            >
+                                                <FormControl>
+                                                    <Checkbox 
+                                                        checked={field.value}
+                                                        onCheckedChange={field.onChange}
+                                                    />
+                                                </FormControl>
+                                                <div className="space-y-1 leading-none">
+                                                    <FormLabel>UL</FormLabel>
+                                                    <FormMessage />
+                                                </div>
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
                     </div>
                     </div>
                     <div className="flex items-center justify-center gap-2 md:hidden">

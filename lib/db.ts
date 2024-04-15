@@ -22,18 +22,14 @@ export async function getItemById(id: string) {
       where: {
         id: parseInt(id),
       },
-      select: {
-          id: true,
-          whse: true,
-          partNo: true,
-          description: true,
-          udf: true,
-      }, 
+      include: {
+        udf: true,
+      }
   });
   return item;
 };
 
-export type InventoryWithSelect = Prisma.PromiseReturnType<typeof getItemById>;
+export type InventoryWithInclude = Prisma.PromiseReturnType<typeof getItemById>;
 
 // Static warehouse data
 // TODO: Move to database

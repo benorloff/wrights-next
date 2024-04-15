@@ -10,6 +10,7 @@ import {
     SquareTerminal,
     SquareUser,
     Triangle,
+    Upload,
 } from "lucide-react"
   
 import { Button } from "@/components/ui/button"
@@ -34,23 +35,40 @@ export const Sidebar = () => {
         </div>
         <nav className="grid gap-1 p-2">
           <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Link href="/">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="rounded-lg bg-muted"
-                  aria-label="Playground"
-                >
-                  <Package className="size-5" />
-                </Button>
-              </Link>
-            </TooltipTrigger>
-            <TooltipContent side="right" sideOffset={5}>
-              Inventory
-            </TooltipContent>
-          </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href="/">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-lg bg-muted"
+                    aria-label="Playground"
+                  >
+                    <Package className="size-5" />
+                  </Button>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={5}>
+                Inventory
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href="/upload">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-lg bg-muted"
+                    aria-label="Playground"
+                  >
+                    <Upload className="size-5" />
+                  </Button>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right" sideOffset={5}>
+                Upload
+              </TooltipContent>
+            </Tooltip>
           </TooltipProvider>
           {/* <Tooltip>
             <TooltipTrigger asChild>

@@ -297,16 +297,16 @@ export const columns: ColumnDef<Inventory>[] = [
     //     header: "Created",
     //     cell: info => info.getValue()?.toString() || "",
     //   },
-      {
-        accessorKey: "createdBy",
-        header: ({ column }) => (
-            <DataTableColumnHeader title="Created By" column={column} /> 
-        ),
-        cell: ({ row }) => row.getValue("createdBy"), 
-        filterFn: (row, id, value) => {
-          return value.includes(row.getValue(id))
-        },
-      },
+      // {
+      //   accessorKey: "createdBy",
+      //   header: ({ column }) => (
+      //       <DataTableColumnHeader title="Created By" column={column} /> 
+      //   ),
+      //   cell: ({ row }) => row.getValue("createdBy"), 
+      //   filterFn: (row, id, value) => {
+      //     return value.includes(row.getValue(id))
+      //   },
+      // },
       {
         id: "actions",
         cell: ({ row }) => <DataTableRowActions row={row} />,

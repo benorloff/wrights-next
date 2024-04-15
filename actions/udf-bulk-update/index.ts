@@ -3,48 +3,78 @@
 import { db } from "@/lib/db";
 import { InputType, Results, ReturnType } from "./types"
 import { createSafeAction } from "@/utils/create-safe-action";
-import { Prisma, Udf } from "@prisma/client";
-import { UdfBulkUpdateSchema } from "./schema";
+import { Inventory, Prisma, Udf } from "@prisma/client";
+import { UdfUpdateSchema, UdfBulkUpdateSchema, UdfFields } from "./schema";
+import { z } from "zod";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
 
-    console.log("udf bulk update handler hit: approvedData -->", data.length)
-
-    const createUdf = (data: any) => {
-        return Prisma.validator<Prisma.UdfUncheckedCreateInput>()({
-            ...data
+    const createNestedUdf = (row: any) => {
+        return Prisma.validator<Prisma.UdfCreateNestedOneWithoutProductInput>()({
+            ...row
         })
     };
 
-    const updateUdf = (data: any) => {
-        return Prisma.validator<Prisma.UdfUncheckedUpdateInput>()({
-            ...data
+    const updateNestedUdf = (row: any) => {
+        return Prisma.validator<Prisma.UdfUpdateOneWithoutProductNestedInput>()({
+            ...row
         })
     };
 
-    const findSpecificUdf = (id: number) => {
-        return Prisma.validator<Prisma.UdfWhereUniqueInput>()({
-            productId: id,
+    const findSpecificProduct = ({
+        whse,
+        partNo,
+    }: {
+        whse: string,
+        partNo: string
+    }) => {
+        return Prisma.validator<Prisma.InventoryWhereUniqueInput>()({
+            whse_partNo: {
+                whse,
+                partNo,
+            }
         })
     };
 
-    const promises: Promise<Udf>[] = [];
+    const promises: Promise<Inventory>[] = [];
 
 
     data.forEach((row) => {
+        const { whse, partNo, ...rest } = row;
         promises.push(
-            db.udf.upsert({
-                where: findSpecificUdf(row.productId),
-                create: createUdf(row),
-                update: updateUdf(row),
+            db.inventory.update({
+                where: findSpecificProduct({
+                    whse, 
+                    partNo,
+                }),
+                data: {
+                    udf: {
+                        upsert: {
+                            create: createNestedUdf({
+                                ...rest
+                            }),
+                            update: updateNestedUdf({
+                                ...rest
+                            }),
+                        },
+                    },
+                },
+                include: {
+                    udf: {
+                        select: {
+                            id: true,
+                        }
+                    } 
+                },
             })
         )
     })
     
-    const productIds = await Promise.all(promises).then((results) => {
+    const productIds = await Promise.all(promises)
+    .then((results) => {
         let productIds: number[] = []
         results.forEach((result) => {
-            productIds.push(result.productId)
+            productIds.push(result.id)
         })
         return productIds;
     })
