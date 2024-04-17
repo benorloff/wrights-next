@@ -33,7 +33,8 @@ import { columns } from "@/components/inventory/columns"
 import { useQuery, keepPreviousData } from "@tanstack/react-query"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Button } from "../ui/button";
-import { ChevronFirst, ChevronLast, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronFirst, ChevronLast, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { Input } from "../ui/input";
 
 export function InventoryDataTable() {
 
@@ -50,6 +51,7 @@ export function InventoryDataTable() {
         queryKey: ['inventory', pagination],
         queryFn: () => fetch(`/api/inventory?start=${pagination.pageIndex}&limit=${pagination.pageSize}`)
             .then((res) => res.json()),
+        placeholderData: keepPreviousData,
     })
 
     const defaultData = useMemo(() => [], [])
@@ -159,16 +161,26 @@ export function InventoryDataTable() {
                     </SelectContent>
                     </Select>
                 </div>
-                <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                    Page {table.getState().pagination.pageIndex + 1} of{" "}
-                    {table.getPageCount()}
+                <div className="flex gap-2 items-center justify-center text-sm font-medium">
+                    <div>Page</div>
+                    <Input
+                        type="number"
+                        defaultValue={table.getState().pagination.pageIndex + 1}
+                        onChange={(e) => {
+                            const page = e.target.value ? Number(e.target.value) - 1 : 0
+                            table.setPageIndex(page)
+                        }}
+                        className="h-8 w-12 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                    <div>of</div>
+                    <div>{table.getPageCount()}</div>
                 </div>
                 <div className="flex items-center space-x-2">
                     <Button
                         variant="outline"
                         className="hidden h-8 w-8 p-0 lg:flex"
                         onClick={() => table.firstPage()}
-                        disabled={!table.getCanPreviousPage()}
+                        disabled={!table.getCanPreviousPage() || inventoryQuery.isFetching}
                     >
                         <span className="sr-only">Go to first page</span>
                         <ChevronFirst className="h-4 w-4" />
@@ -177,7 +189,7 @@ export function InventoryDataTable() {
                         variant="outline"
                         className="h-8 w-8 p-0"
                         onClick={() => table.previousPage()}
-                        disabled={!table.getCanPreviousPage()}
+                        disabled={!table.getCanPreviousPage() || inventoryQuery.isFetching}
                     >
                         <span className="sr-only">Go to previous page</span>
                         <ChevronLeft className="h-4 w-4" />
@@ -186,16 +198,16 @@ export function InventoryDataTable() {
                         variant="outline"
                         className="h-8 w-8 p-0"
                         onClick={() => table.nextPage()}
-                        disabled={!table.getCanNextPage()}
+                        disabled={!table.getCanNextPage() || inventoryQuery.isFetching}
                     >
                         <span className="sr-only">Go to next page</span>
-                        <ChevronRight className="h-4 w-4" />
+                            <ChevronRight className="h-4 w-4" />
                     </Button>
                     <Button
                         variant="outline"
                         className="hidden h-8 w-8 p-0 lg:flex"
                         onClick={() => table.lastPage()}
-                        disabled={!table.getCanNextPage()}
+                        disabled={!table.getCanNextPage() || inventoryQuery.isFetching}
                     >
                         <span className="sr-only">Go to last page</span>
                         <ChevronLast className="h-4 w-4" />
