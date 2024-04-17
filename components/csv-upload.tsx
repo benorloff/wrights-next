@@ -23,7 +23,7 @@ import { Udf } from "@prisma/client";
 import { Separator } from "./ui/separator";
 import { set } from "zod";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table";
-import { Check } from "lucide-react";
+import { Check, X } from "lucide-react";
 
 type Steps = 1 | 2 | 3 | 4;
 
@@ -182,67 +182,132 @@ export const CsvUpload = () => {
                                     <TableRow>
                                         <TableCell>File Name</TableCell>
                                         <TableCell>{file.name}</TableCell>
-                                        <TableCell><Check /></TableCell>
+                                        <TableCell>
+                                            {file?.name 
+                                                ? <Check className="text-green-500"/> 
+                                                : <X  className="text-red-500"/>
+                                            }
+                                        </TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>File Size</TableCell>
                                         <TableCell>{formatFileSize(file.size, 2)}</TableCell>
-                                        <TableCell><Check /></TableCell>
+                                        <TableCell>
+                                            {file?.size 
+                                                ? <Check className="text-green-500"/> 
+                                                : <X  className="text-red-500"/>
+                                            }
+                                        </TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>File Type</TableCell>
                                         <TableCell>{file.type}</TableCell>
-                                        <TableCell><Check /></TableCell>
+                                        <TableCell>
+                                            {file?.type 
+                                                ? <Check className="text-green-500"/> 
+                                                : <X  className="text-red-500"/>
+                                            }
+                                        </TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>File URL</TableCell>
                                         <TableCell><Link href={file.url} target="_blank" className="text-primary">{file.url}</Link></TableCell>
-                                        <TableCell><Check /></TableCell>
+                                        <TableCell>
+                                            {file?.url 
+                                                ? <Check className="text-green-500"/> 
+                                                : <X  className="text-red-500"/>
+                                            }
+                                        </TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Fields</TableCell>
                                         <TableCell>{parseResults.meta.fields.length}</TableCell>
-                                        <TableCell><Check /></TableCell>
+                                        <TableCell>
+                                            {parseResults?.meta.fields.length 
+                                                ? <Check className="text-green-500"/> 
+                                                : <X  className="text-red-500"/>
+                                            }
+                                        </TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Total Rows</TableCell>
                                         <TableCell>{parseResults.data.length}</TableCell>
-                                        <TableCell><Check /></TableCell>
+                                        <TableCell>
+                                            {parseResults?.data.length 
+                                                ? <Check className="text-green-500"/> 
+                                                : <X  className="text-red-500"/>
+                                            }
+                                        </TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Errors</TableCell>
                                         <TableCell>{parseResults.errors.length}</TableCell>
-                                        <TableCell><Check /></TableCell>
+                                        <TableCell>
+                                            {!parseResults?.errors.length 
+                                                ? <Check className="text-green-500"/> 
+                                                : <X  className="text-red-500"/>
+                                            }
+                                        </TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Aborted</TableCell>
                                         <TableCell>{parseResults.meta.aborted.toString()}</TableCell>
-                                        <TableCell><Check /></TableCell>
+                                        <TableCell>
+                                            {!parseResults?.meta.aborted 
+                                                ? <Check className="text-green-500"/> 
+                                                : <X  className="text-red-500"/>
+                                            }
+                                        </TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Truncated</TableCell>
                                         <TableCell>{parseResults.meta.truncated.toString()}</TableCell>
-                                        <TableCell><Check /></TableCell>
+                                        <TableCell>
+                                            {!parseResults?.meta.truncated 
+                                                ? <Check className="text-green-500"/> 
+                                                : <X  className="text-red-500"/>
+                                            }
+                                        </TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Valid File</TableCell>
                                         <TableCell>{parseAnalysis.isValid.toString()}</TableCell>
-                                        <TableCell><Check /></TableCell>
+                                        <TableCell>
+                                            {parseAnalysis?.isValid 
+                                                ? <Check className="text-green-500"/> 
+                                                : <X  className="text-red-500"/>
+                                            }
+                                        </TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Has Warehouse Field</TableCell>
                                         <TableCell>{parseAnalysis.meta.hasWhseField.toString()}</TableCell>
-                                        <TableCell><Check /></TableCell>
+                                        <TableCell>
+                                            {parseAnalysis?.meta.hasWhseField 
+                                                ? <Check className="text-green-500"/> 
+                                                : <X  className="text-red-500"/>
+                                            }
+                                        </TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Has Part No. Field</TableCell>
                                         <TableCell>{parseAnalysis.meta.hasPartNoField.toString()}</TableCell>
-                                        <TableCell><Check /></TableCell>
+                                        <TableCell>
+                                            {parseAnalysis?.meta.hasPartNoField 
+                                                ? <Check className="text-green-500"/> 
+                                                : <X  className="text-red-500"/>
+                                            }
+                                        </TableCell>
                                     </TableRow>
                                     <TableRow>
                                         <TableCell>Invalid Fields</TableCell>
                                         <TableCell>{parseAnalysis.meta.invalidFields.length}</TableCell>
-                                        <TableCell><Check /></TableCell>
+                                        <TableCell>
+                                            {!parseAnalysis?.meta.invalidFields.length 
+                                                ? <Check className="text-green-500"/> 
+                                                : <X  className="text-red-500"/>
+                                            }
+                                        </TableCell>
                                     </TableRow>
                                 </TableBody>
                             </Table>

@@ -4,28 +4,26 @@ import { NextResponse } from "next/server";
 export async function GET(
     req: Request,
 ) {
-  // const { searchParams } = new URL(req.url);
-  // const start = searchParams.get("start");
-  // const limit = searchParams.get("limit");
+  const { searchParams } = new URL(req.url);
+  const start = parseInt(searchParams.get("start")!);
+  const limit = parseInt(searchParams.get("limit")!);
+
   try {
-    // const data = await db.inventory.findMany({
-    //     orderBy: {
-    //         id: "asc",
-    //     },
-    //     skip: parseInt(start!),
-    //     take: parseInt(limit!),
-    // });
-    const data = await db.inventory.findMany(
-      {
+
+    const count = await db.inventory.count();
+
+    const results = await db.inventory.findMany({
+        take: limit,
+        skip: start * limit,
         orderBy: {
           id: "asc",
         },
-        // Temporarily taking only 1000 records to avoid performance issues
-        take: 1000,
-      }, 
-    );
-    // console.log(data, '<-- data from route handler');
-    return NextResponse.json(data);
+    });
+    return NextResponse.json({
+      rows: results,
+      pageCount: Math.ceil(count / limit),
+      rowCount: count,
+    });
   } catch (error) {
     return new NextResponse("An error occurred while fetching the inventory.", { status: 500 });
   }

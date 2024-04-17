@@ -19,72 +19,8 @@ model Inventory {
   whse        String  
   partNo      String  
   description String? 
-  // status             Int?
-  // availableQty       String?
-  // onHandQty          String?
-  // backorderQty       String?
-  // committedQty       String?
-  // onPurchaseQty      String?
-  // buyMeasureCode     String?
-  // stockMeasureCode   String?
-  // sellMeasureCode    String?
-  // alternatePartNo    String?
-  // currentCost        String?
-  // averageCost        String?
-  // standardCost       String?
-  // groupNo            String?
-  // type               String?
-  // salesDepartment    String?
-  // userDef1           String?
-  // userDef2           String?
-  // poDueDate          String?
-  // currentPONo        String?
-  // reorderPoint       String?
-  // minimumBuyQty      String?
-  // lastYearQty        String?
-  // lastYearSales      String?
-  // thisYearQty        String?
-  // thisYearSales      String?
-  // nextYearQty        String?
-  // nextYearSales      String?
-  // allowBackorders    Boolean?
-  // allowReturns       Boolean?
-  // dutyPct            String?
-  // freightPct         String?
-  // defaultExpiryDate  Int?
-  // lotConsumeType     Int?
-  // manufactureCountry String?
-  // harmonizedCode     String?
-  // suggestedOrderQty  String?
-  // pricing            String?
-  // uom                String?
-  // packSize           String?
-  // foregroundColor    String
-  // backgroundColor    String
-  // levy               String?
-  // primaryVendor      String?
-  // allowBackOrders    Boolean?
-  // dfltExpiryDays     Int?
-  // mfgCountry         String?
-  // hsCode             String?
-  // serializedMode     String?
-  // upload             Boolean?
-  // lastModified       String?
-  // lastSaleDate       String?
-  // lastReceiptDate    String?
-  // lastCountDate      String?
-  // lastCountQty       String?
-  // lastCountVariance  String?
-  // created            String?
-  // createdBy          String?
-  // modified           String?
-  // modifiedBy         String?
-  // links              String?
 
   udf Udf?
-
-  // createdAt DateTime @default(now())
-  // updatedAt DateTime @updatedAt
 
   @@unique([whse, partNo])
   @@map("inventory")
